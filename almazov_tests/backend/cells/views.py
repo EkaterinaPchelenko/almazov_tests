@@ -74,32 +74,33 @@ def submit_answer(request):
     image_id = int(request.POST.get("image_id"))
     answer = (request.POST.get("answer") or "").strip().lower()
 
-    # текущий индекс до увеличения
-    current = request.session.get("current", 0)
-    ids = request.session.get("test_images", [])
-
-    # защита от кривых сессий
-    if current >= len(ids):
-        return get_question(request)
-
     image = CellImage.objects.select_related("cell").get(id=image_id)
-
     correct_name = image.cell.name.strip().lower()
     is_correct = answer == correct_name
 
+    # обновляем score и current
     if is_correct:
         request.session["score"] = request.session.get("score", 0) + 1
 
-    request.session["current"] = current + 1
+    request.session["current"] = request.session.get("current", 0) + 1
 
-    # отдаём следующий вопрос, но добавим короткий feedback
-    resp = get_question(request)
-    # если следующий вопрос ещё есть — покажем фидбек (опционально)
-    # проще всего передать через контекст, но сейчас resp уже готов.
-    # Поэтому фидбек лучше показывать отдельным блоком или модалкой.
-    return resp
+    # показываем следующий вопрос (HTMX подменит контейнер)
+    response = get_question(request)
+    return response
 
 
 @login_required
 def test_result(request):
     return get_question(request)
+
+
+@login_required
+def start_test_random(request):
+    # инициализация сессии теста
+    request.session["current"] = 0
+    request.session["score"] = 0
+
+    ids = list(CellImage.objects.order_by("?").values_list("id", flat=True)[:TEST_LENGTH])
+    request.session["test_images"] = ids
+
+    return render(request, "test.html")

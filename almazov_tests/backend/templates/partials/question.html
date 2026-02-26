@@ -37,11 +37,5 @@
         Submit Answer
       </button>
     </form>
-
-    {% if feedback %}
-      <div class="mt-4 text-sm {% if feedback.correct %}text-emerald-600{% else %}text-red-600{% endif %}">
-        {{ feedback.message }}
-      </div>
-    {% endif %}
   </div>
 </div>
