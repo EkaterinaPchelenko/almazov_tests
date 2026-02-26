@@ -29,28 +29,38 @@ def start_test(request, mode):
 @login_required
 def get_question(request):
     current = request.session.get("current", 0)
-
-    if current >= TEST_LENGTH:
-        return render(request, "partials/result.html")
-
     used = request.session.get("used_images", [])
 
-    images = CellImage.objects.exclude(id__in=used)
-    image = random.choice(images)
+    if current >= TEST_LENGTH:
+        return render(request, "partials/result.html", {
+            "score": request.session.get("score", 0),
+            "total": TEST_LENGTH,
+            "percent": int((request.session.get("score", 0) / TEST_LENGTH) * 100),
+        })
+
+    qs = CellImage.objects.exclude(id__in=used)
+
+    # если картинки закончились
+    if not qs.exists():
+        return render(request, "partials/result.html", {
+            "score": request.session.get("score", 0),
+            "total": current if current else TEST_LENGTH,
+            "percent": int((request.session.get("score", 0) / (current if current else 1)) * 100),
+        })
+
+    image = qs.order_by("?").first()  # <-- вместо random.choice()
 
     used.append(image.id)
     request.session["used_images"] = used
 
     percent = int((current / TEST_LENGTH) * 100)
 
-    context = {
+    return render(request, "partials/question.html", {
         "image": image,
         "current": current + 1,
         "total": TEST_LENGTH,
         "percent": percent,
-    }
-
-    return render(request, "partials/question.html", context)
+    })
 
 
 @login_required
