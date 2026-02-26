@@ -1,14 +1,14 @@
-import random
-
-from django.shortcuts import render
-from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-
+from django.shortcuts import render
+from django.db.models import F
 from .models import CellImage
 
-
-# Простая сессия теста
 TEST_LENGTH = 10
+
+
+def _pick_random_images_ids(limit: int):
+    # случайная выборка
+    return list(CellImage.objects.order_by("?").values_list("id", flat=True)[:limit])
 
 
 @login_required
@@ -17,75 +17,89 @@ def dashboard(request):
 
 
 @login_required
-def start_test(request, mode):
+def start_test(request, mode: str):
+    """
+    mode: 'random' или 'trainer'
+    """
     request.session["mode"] = mode
     request.session["current"] = 0
     request.session["score"] = 0
-    request.session["used_images"] = []
 
+    # В random мы заранее формируем список изображений
+    # (trainer позже заменим на адаптивный подбор)
+    if mode == "random":
+        ids = _pick_random_images_ids(TEST_LENGTH)
+    else:
+        # пока заглушка: тоже случайные
+        # на следующем шаге подключим твой улучшенный алгоритм trainer
+        ids = _pick_random_images_ids(TEST_LENGTH)
+
+    request.session["test_images"] = ids
     return render(request, "test.html")
 
 
 @login_required
 def get_question(request):
+    ids = request.session.get("test_images", [])
     current = request.session.get("current", 0)
-    used = request.session.get("used_images", [])
 
-    if current >= TEST_LENGTH:
+    if not ids:
+        # если тест не инициализирован, покажем dashboard
         return render(request, "partials/result.html", {
-            "score": request.session.get("score", 0),
-            "total": TEST_LENGTH,
-            "percent": int((request.session.get("score", 0) / TEST_LENGTH) * 100),
+            "score": 0, "total": 0, "percent": 0
         })
 
-    qs = CellImage.objects.exclude(id__in=used)
-
-    # если картинки закончились
-    if not qs.exists():
+    if current >= len(ids):
+        score = request.session.get("score", 0)
+        total = len(ids)
+        percent = int((score / total) * 100) if total else 0
         return render(request, "partials/result.html", {
-            "score": request.session.get("score", 0),
-            "total": current if current else TEST_LENGTH,
-            "percent": int((request.session.get("score", 0) / (current if current else 1)) * 100),
+            "score": score, "total": total, "percent": percent
         })
 
-    image = qs.order_by("?").first()  # <-- вместо random.choice()
+    image = CellImage.objects.select_related("cell").get(id=ids[current])
 
-    used.append(image.id)
-    request.session["used_images"] = used
-
-    percent = int((current / TEST_LENGTH) * 100)
+    percent = int((current / len(ids)) * 100)
 
     return render(request, "partials/question.html", {
         "image": image,
         "current": current + 1,
-        "total": TEST_LENGTH,
+        "total": len(ids),
         "percent": percent,
     })
 
 
 @login_required
 def submit_answer(request):
-    image_id = request.POST.get("image_id")
-    answer = request.POST.get("answer")
+    image_id = int(request.POST.get("image_id"))
+    answer = (request.POST.get("answer") or "").strip().lower()
 
-    image = CellImage.objects.get(id=image_id)
+    # текущий индекс до увеличения
+    current = request.session.get("current", 0)
+    ids = request.session.get("test_images", [])
 
-    if answer.strip().lower() == image.cell.name.lower():
-        request.session["score"] += 1
+    # защита от кривых сессий
+    if current >= len(ids):
+        return get_question(request)
 
-    request.session["current"] += 1
+    image = CellImage.objects.select_related("cell").get(id=image_id)
 
-    return get_question(request)
+    correct_name = image.cell.name.strip().lower()
+    is_correct = answer == correct_name
+
+    if is_correct:
+        request.session["score"] = request.session.get("score", 0) + 1
+
+    request.session["current"] = current + 1
+
+    # отдаём следующий вопрос, но добавим короткий feedback
+    resp = get_question(request)
+    # если следующий вопрос ещё есть — покажем фидбек (опционально)
+    # проще всего передать через контекст, но сейчас resp уже готов.
+    # Поэтому фидбек лучше показывать отдельным блоком или модалкой.
+    return resp
 
 
 @login_required
 def test_result(request):
-    score = request.session.get("score", 0)
-
-    context = {
-        "score": score,
-        "total": TEST_LENGTH,
-        "percent": int((score / TEST_LENGTH) * 100)
-    }
-
-    return render(request, "partials/result.html", context)
+    return get_question(request)

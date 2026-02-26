@@ -1,20 +1,11 @@
 <div class="bg-white p-8 rounded-xl shadow text-center">
+  <h2 class="text-2xl font-semibold mb-4">Test Completed 🎉</h2>
 
-    <h2 class="text-2xl font-semibold mb-4">
-        Test Completed 🎉
-    </h2>
+  <p class="text-lg mb-2">Score: {{ score }} / {{ total }}</p>
+  <p class="text-xl font-semibold mb-6">{{ percent }}%</p>
 
-    <p class="text-lg mb-2">
-        Score: {{ score }} / {{ total }}
-    </p>
-
-    <p class="text-xl font-semibold mb-6">
-        {{ percent }}%
-    </p>
-
-    <a href="{% url 'dashboard' %}"
-       class="bg-blue-600 text-white px-6 py-2 rounded-lg">
-        Back to Dashboard
-    </a>
-
+  <a href="{% url 'dashboard' %}"
+     class="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+    Back to Dashboard
+  </a>
 </div>

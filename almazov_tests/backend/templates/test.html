@@ -1,15 +1,13 @@
 {% extends "base.html" %}
-
 {% block content %}
 
 <div class="max-w-6xl mx-auto py-8 px-6">
-    <div id="test-container"
-         data-hx-get="{% url 'get_question' %}"
-         data-hx-trigger="load"
-         data-hx-target="#test-container"
-         data-hx-swap="innerHTML">
-    </div>
-
+  <div id="test-container"
+       data-hx-get="{% url 'get_question' %}"
+       data-hx-trigger="load"
+       data-hx-target="#test-container"
+       data-hx-swap="innerHTML">
+  </div>
 </div>
 
 {% endblock %}
