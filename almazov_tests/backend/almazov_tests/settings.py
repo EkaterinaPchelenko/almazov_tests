@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'users'
+    'storages',
+    'users',
+    'cells'
 ]
 
 MIDDLEWARE = [
@@ -130,3 +132,27 @@ REST_FRAMEWORK = {
 }
 
 AUTH_USER_MODEL = 'users.User'
+
+# Используем S3 backend
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+AWS_ACCESS_KEY_ID = "minioadmin"
+AWS_SECRET_ACCESS_KEY = "minioadmin"
+
+AWS_STORAGE_BUCKET_NAME = "medical-images"
+
+AWS_S3_ENDPOINT_URL = "http://localhost:9000"
+
+AWS_S3_REGION_NAME = "us-east-1"
+
+AWS_S3_USE_SSL = False
+AWS_S3_VERIFY = False
+
+AWS_DEFAULT_ACL = None
+AWS_QUERYSTRING_AUTH = False
