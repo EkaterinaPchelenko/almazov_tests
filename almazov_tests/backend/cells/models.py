@@ -70,6 +70,23 @@ class UserImagePerformance(models.Model):
         unique_together = ("user", "image")
 
 
+class ImageSimilarity(models.Model):
+    image_from = models.ForeignKey(
+        CellImage,
+        on_delete=models.CASCADE,
+        related_name="similarity_from"
+    )
+    image_to = models.ForeignKey(
+        CellImage,
+        on_delete=models.CASCADE,
+        related_name="similarity_to"
+    )
+    similarity_score = models.FloatField(default=0)
+
+    class Meta:
+        unique_together = ("image_from", "image_to")
+
+
 class GlobalImageStats(models.Model):
     image = models.OneToOneField(
         CellImage,
