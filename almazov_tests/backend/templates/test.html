@@ -1,13 +1,16 @@
 {% extends "base.html" %}
-{% block title %}Test{% endblock %}
-
 {% block content %}
-<div class="max-w-6xl mx-auto py-8 px-6">
-  <div id="test-container"
-       data-hx-get="{% url 'get_question' %}"
-       data-hx-trigger="load"
-       data-hx-target="#test-container"
-       data-hx-swap="innerHTML">
-  </div>
+<div>
+    <h2>Определите клетку</h2>
+    <p>{{ order_number }} / {{ total }}</p>
+    <progress value="{{ percent }}" max="100"></progress>
+
+    <img src="{{ image.image.url }}" alt="Cell image" style="max-width: 400px;">
+
+    <form method="post" action="{% url 'submit_answer' session.id %}">
+        {% csrf_token %}
+        <input type="text" name="answer" placeholder="Введите название клетки">
+        <button type="submit">Ответить</button>
+    </form>
 </div>
 {% endblock %}

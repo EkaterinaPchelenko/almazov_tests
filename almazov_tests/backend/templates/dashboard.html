@@ -1,47 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
+<h1>Welcome back, {{ request.user.username }}!</h1>
+<p>Continue your learning journey and master cell identification.</p>
 
-<div class="max-w-6xl mx-auto py-10 px-6">
-
-    <h1 class="text-2xl font-semibold mb-2">
-        Welcome back, {{ request.user.username }}!
-    </h1>
-    <p class="text-slate-500 mb-8">
-        Continue your learning journey and master cell identification.
-    </p>
-
-    <div class="grid md:grid-cols-2 gap-6">
-
-        <!-- Random Test -->
-        <a href="{% url 'start_test' 'random' %}"
-           class="bg-white p-6 rounded-xl shadow hover:shadow-md transition border">
-
-            <h2 class="text-lg font-semibold mb-2">Random Test</h2>
-            <p class="text-slate-500 text-sm">
-                Take a test with randomly selected images.
-            </p>
-
-        </a>
-
-        <!-- Adaptive Test -->
-        <a href="{% url 'start_test' 'trainer' %}"
-           class="bg-white p-6 rounded-xl shadow hover:shadow-md transition border-2 border-blue-500">
-
-            <h2 class="text-lg font-semibold mb-2">
-                Adaptive Test
-                <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded ml-2">
-                    Recommended
-                </span>
-            </h2>
-
-            <p class="text-slate-500 text-sm">
-                Personalized test generated using collaborative filtering.
-            </p>
-
-        </a>
-
-    </div>
-
-</div>
-
+<a href="{% url 'start_test' 'random' %}">Random Test</a>
+<a href="{% url 'start_test' 'trainer' %}">Adaptive Test</a>
 {% endblock %}

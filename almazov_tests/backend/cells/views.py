@@ -1,14 +1,13 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-from django.db.models import F
-from .models import CellImage
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+
+from .models import CellImage, TestSession, TestSessionImage
+from .services.progress import save_answer
+from .services.random_test import generate_random_images
+from .services.trainer_test import generate_trainer_images
 
 TEST_LENGTH = 10
-
-
-def _pick_random_images_ids(limit: int):
-    # случайная выборка
-    return list(CellImage.objects.order_by("?").values_list("id", flat=True)[:limit])
 
 
 @login_required
@@ -17,90 +16,74 @@ def dashboard(request):
 
 
 @login_required
-def start_test(request, mode: str):
-    """
-    mode: 'random' или 'trainer'
-    """
-    request.session["mode"] = mode
-    request.session["current"] = 0
-    request.session["score"] = 0
+def start_test(request, mode):
+    session = TestSession.objects.create(
+        user=request.user,
+        mode=mode,
+        total_questions=TEST_LENGTH,
+    )
 
-    # В random мы заранее формируем список изображений
-    # (trainer позже заменим на адаптивный подбор)
-    if mode == "random":
-        ids = _pick_random_images_ids(TEST_LENGTH)
+    if mode == TestSession.Mode.RANDOM:
+        images = generate_random_images(TEST_LENGTH)
     else:
-        # пока заглушка: тоже случайные
-        # на следующем шаге подключим твой улучшенный алгоритм trainer
-        ids = _pick_random_images_ids(TEST_LENGTH)
+        images = generate_trainer_images(request.user, TEST_LENGTH)
 
-    request.session["test_images"] = ids
-    return render(request, "test.html")
+    for idx, image in enumerate(images, start=1):
+        TestSessionImage.objects.create(
+            session=session,
+            image=image,
+            order_number=idx,
+        )
+
+    return redirect("test_page", session_id=session.id)
 
 
 @login_required
-def get_question(request):
-    ids = request.session.get("test_images", [])
-    current = request.session.get("current", 0)
+def test_page(request, session_id):
+    session = get_object_or_404(TestSession, id=session_id, user=request.user)
 
-    if not ids:
-        # если тест не инициализирован, покажем dashboard
+    current_item = session.session_images.filter(is_answered=False).first()
+
+    if not current_item:
+        if not session.is_completed:
+            session.is_completed = True
+            session.finished_at = timezone.now()
+            session.save(update_fields=["is_completed", "finished_at"])
         return render(request, "partials/result.html", {
-            "score": 0, "total": 0, "percent": 0
+            "session": session,
+            "score": session.correct_answers,
+            "total": session.total_questions,
+            "percent": int((session.correct_answers / session.total_questions) * 100) if session.total_questions else 0,
         })
 
-    if current >= len(ids):
-        score = request.session.get("score", 0)
-        total = len(ids)
-        percent = int((score / total) * 100) if total else 0
-        return render(request, "partials/result.html", {
-            "score": score, "total": total, "percent": percent
-        })
+    percent = int(((current_item.order_number - 1) / session.total_questions) * 100)
 
-    image = CellImage.objects.select_related("cell").get(id=ids[current])
-
-    percent = int((current / len(ids)) * 100)
-
-    return render(request, "partials/question.html", {
-        "image": image,
-        "current": current + 1,
-        "total": len(ids),
+    return render(request, "test.html", {
+        "session": session,
+        "image": current_item.image,
+        "order_number": current_item.order_number,
+        "total": session.total_questions,
         "percent": percent,
     })
 
 
 @login_required
-def submit_answer(request):
-    image_id = int(request.POST.get("image_id"))
-    answer = (request.POST.get("answer") or "").strip().lower()
+def submit_answer(request, session_id):
+    session = get_object_or_404(TestSession, id=session_id, user=request.user)
 
-    image = CellImage.objects.select_related("cell").get(id=image_id)
-    correct_name = image.cell.name.strip().lower()
-    is_correct = answer == correct_name
+    current_item = session.session_images.filter(is_answered=False).first()
+    if not current_item:
+        return redirect("test_page", session_id=session.id)
 
-    # обновляем score и current
-    if is_correct:
-        request.session["score"] = request.session.get("score", 0) + 1
+    user_answer = request.POST.get("answer", "")
+    save_answer(
+        session=session,
+        image=current_item.image,
+        user_answer=user_answer,
+        order_number=current_item.order_number,
+    )
 
-    request.session["current"] = request.session.get("current", 0) + 1
+    current_item.is_answered = True
+    current_item.save(update_fields=["is_answered"])
 
-    # показываем следующий вопрос (HTMX подменит контейнер)
-    response = get_question(request)
-    return response
-
-
-@login_required
-def test_result(request):
-    return get_question(request)
-
-
-@login_required
-def start_test_random(request):
-    # инициализация сессии теста
-    request.session["current"] = 0
-    request.session["score"] = 0
-
-    ids = list(CellImage.objects.order_by("?").values_list("id", flat=True)[:TEST_LENGTH])
-    request.session["test_images"] = ids
-
-    return render(request, "test.html")
+    return redirect("test_page", session_id=session.id)
