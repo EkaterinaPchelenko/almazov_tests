@@ -1,8 +1,83 @@
 {% extends "base.html" %}
-{% block content %}
-<h1>Welcome back, {{ request.user.username }}!</h1>
-<p>Continue your learning journey and master cell identification.</p>
 
-<a href="{% url 'start_test' 'random' %}">Random Test</a>
-<a href="{% url 'start_test' 'trainer' %}">Adaptive Test</a>
+{% block title %}Главная | Medical Cell Trainer{% endblock %}
+
+{% block content %}
+<section class="card card--soft" style="padding: 34px; margin-bottom: 24px;">
+    <div class="grid-2" style="align-items: center;">
+        <div style="display: flex; flex-direction: column; gap: 18px;">
+            <span class="pill">Медицинский тренажёр</span>
+
+            <h1 class="section-title">
+                Добро пожаловать,
+                {{ request.user.username|default:"студент" }}
+            </h1>
+
+            <p class="section-text" style="max-width: 650px;">
+                Тренируйте распознавание клеток по изображениям из гистологии и цитологии.
+                Система поддерживает два режима: случайный тест для общей практики и адаптивный тренажёр,
+                который подбирает изображения с учётом ваших ошибок.
+            </p>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 14px; margin-top: 8px;">
+                <a href="{% url 'start_test' 'random' %}" class="btn btn--secondary">
+                    Случайный тест
+                </a>
+                <a href="{% url 'start_test' 'trainer' %}" class="btn btn--primary">
+                    Адаптивный тренажёр
+                </a>
+            </div>
+        </div>
+
+        <div class="card" style="padding: 26px; background: linear-gradient(180deg, #f8fcff 0%, #eef7fb 100%);">
+            <div style="display: flex; flex-direction: column; gap: 18px;">
+                <div>
+                    <div style="font-size: 14px; font-weight: 700; color: var(--text-soft); margin-bottom: 8px;">
+                        Как это работает
+                    </div>
+                    <div style="display: grid; gap: 12px;">
+                        <div class="stat-card">
+                            <div class="stat-card__label">1. Изображение клетки</div>
+                            <div class="helper-text">Вы видите микроскопическое изображение и определяете тип клетки.</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card__label">2. Ответ и проверка</div>
+                            <div class="helper-text">Система фиксирует правильность ответа и сохраняет персональную статистику.</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card__label">3. Адаптивный подбор</div>
+                            <div class="helper-text">В тренажёре чаще показываются проблемные и похожие изображения.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="grid-3">
+    <article class="stat-card">
+        <div class="stat-card__label">Random mode</div>
+        <div class="stat-card__value">Свободная практика</div>
+        <div class="stat-card__hint">
+            Подходит для быстрого повторения материала без учёта прошлых ошибок.
+        </div>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-card__label">Trainer mode</div>
+        <div class="stat-card__value">Персональный фокус</div>
+        <div class="stat-card__hint">
+            Усиливает обучение за счёт адаптивного подбора изображений.
+        </div>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-card__label">Цель системы</div>
+        <div class="stat-card__value">Уверенное распознавание</div>
+        <div class="stat-card__hint">
+            Формирование устойчивого навыка идентификации клеток по изображению.
+        </div>
+    </article>
+</section>
 {% endblock %}

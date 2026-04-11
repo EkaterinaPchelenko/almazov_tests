@@ -1,0 +1,129 @@
+<section class="test-layout">
+    <div class="card image-panel">
+        <div class="panel-header">
+            <div>
+                <h1 class="question-title">Определите тип клетки</h1>
+                <p class="question-subtitle">
+                    Посмотрите на изображение и введите правильное название клетки.
+                </p>
+            </div>
+
+            <div class="question-index">
+                {{ order_number }} / {{ total }}
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+                {% if session.mode == "trainer" %}
+                    <span class="mode-badge mode-badge--trainer">Adaptive trainer</span>
+                {% else %}
+                    <span class="mode-badge mode-badge--random">Random test</span>
+                {% endif %}
+
+                <div style="font-size: 14px; color: var(--text-soft); font-weight: 600;">
+                    Прогресс: {{ percent }}%
+                </div>
+            </div>
+
+            <div class="progress">
+                <div class="progress__bar" style="width: {{ percent }}%;"></div>
+            </div>
+        </div>
+
+        <div class="image-frame">
+            {% if image.image %}
+                <img src="{{ image.image.url }}" alt="{{ image.cell.name }}">
+            {% else %}
+                <div style="text-align: center; color: var(--text-soft);">
+                    Изображение недоступно
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <aside class="card answer-panel">
+        <div class="answer-stack">
+            <div>
+                <span class="pill">Ответ студента</span>
+            </div>
+
+            <div>
+                <h2 style="margin: 0 0 8px; font-size: 24px; font-weight: 800; letter-spacing: -0.03em;">
+                    Введите название клетки
+                </h2>
+                <p class="section-text" style="font-size: 14px;">
+                    Используйте точное медицинское название.
+                </p>
+            </div>
+
+            <form
+                id="answer-form"
+                hx-post="{% url 'submit_answer_htmx' session.id %}"
+                hx-target="#test-container"
+                hx-swap="innerHTML"
+                style="display: flex; flex-direction: column; gap: 18px;"
+            >
+                {% csrf_token %}
+                <input type="hidden" name="response_time_ms" id="response_time_ms">
+
+                <div class="field">
+                    <label for="answer">Ваш ответ</label>
+                    <input
+                        id="answer"
+                        name="answer"
+                        type="text"
+                        placeholder="Например: нейтрофил"
+                        autocomplete="off"
+                        required
+                        autofocus
+                    >
+                    <div class="helper-text">
+                        Регистр не имеет значения, но старайтесь вводить без сокращений.
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn--primary btn--full">
+                    Ответить
+                </button>
+            </form>
+
+            <div class="meta-list">
+                <div class="meta-item">
+                    <span class="meta-item__label">Режим</span>
+                    <span class="meta-item__value">
+                        {% if session.mode == "trainer" %}
+                            Тест-тренажёр
+                        {% else %}
+                            Случайный тест
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div class="meta-item">
+                    <span class="meta-item__label">Вопрос</span>
+                    <span class="meta-item__value">{{ order_number }} из {{ total }}</span>
+                </div>
+
+                <div class="meta-item">
+                    <span class="meta-item__label">Текущий прогресс</span>
+                    <span class="meta-item__value">{{ percent }}%</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+</section>
+
+<script>
+    (function () {
+        const startedAt = Date.now();
+        const form = document.getElementById("answer-form");
+        const responseField = document.getElementById("response_time_ms");
+
+        if (form && responseField) {
+            form.addEventListener("submit", function () {
+                responseField.value = Date.now() - startedAt;
+            });
+        }
+    })();
+</script>

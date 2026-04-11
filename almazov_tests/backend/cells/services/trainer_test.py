@@ -1,73 +1,116 @@
 import math
+import random
 from collections import defaultdict
 
-from cells.models import CellImage, ImageSimilarity, UserImagePerformance
+from django.db.models import F
 
-PERSONAL_WEIGHT = 0.6
-SIMILARITY_WEIGHT = 0.3
-NOVELTY_WEIGHT = 0.1
-MIN_PERSONAL_SCORE = 0.4
+from cells.models import (
+    CellImage,
+    ImageSimilarity,
+    TestSessionImage,
+    UserImagePerformance,
+)
+
+ALPHA = 1.0
 
 
-def get_personal_scores(user):
+def smoothed_error_rate(correct_attempts: int, total_attempts: int) -> float:
+    return 1.0 - ((correct_attempts + ALPHA) / (total_attempts + 2 * ALPHA))
+
+
+def novelty_score(total_attempts: int) -> float:
+    return 1.0 if total_attempts == 0 else math.exp(-total_attempts)
+
+
+def get_personal_error_scores(user) -> dict[int, float]:
+    performances = UserImagePerformance.objects.filter(user=user).only(
+        "image_id",
+        "correct_attempts",
+        "total_attempts",
+    )
+
     result = {}
-    qs = UserImagePerformance.objects.filter(user=user)
-
-    for perf in qs:
-        error_rate = 1 - ((perf.correct_attempts + 1) / (perf.total_attempts + 2))
-        result[perf.image_id] = error_rate
-
+    for perf in performances:
+        result[perf.image_id] = smoothed_error_rate(
+            perf.correct_attempts,
+            perf.total_attempts,
+        )
     return result
 
 
-def get_similarity_scores(problem_image_ids):
-    scores = defaultdict(float)
+def get_problem_images(user, min_attempts: int = 1, min_error: float = 0.4) -> list[int]:
+    performances = UserImagePerformance.objects.filter(
+        user=user,
+        total_attempts__gte=min_attempts,
+    )
 
-    similarities = ImageSimilarity.objects.filter(
+    result = []
+    for perf in performances:
+        error = smoothed_error_rate(perf.correct_attempts, perf.total_attempts)
+        if error >= min_error:
+            result.append(perf.image_id)
+    return result
+
+
+def get_similarity_scores(problem_image_ids: list[int]) -> dict[int, float]:
+    if not problem_image_ids:
+        return {}
+
+    similarity_rows = ImageSimilarity.objects.filter(
         image_from_id__in=problem_image_ids
-    ).order_by("-similarity_score")
+    ).select_related("image_to")
 
-    for sim in similarities:
-        scores[sim.image_to_id] += sim.similarity_score
+    scores = defaultdict(float)
+    for row in similarity_rows:
+        scores[row.image_to_id] += row.similarity_score
 
-    return scores
+    return dict(scores)
 
 
-def generate_trainer_images(user, limit=10):
-    personal_scores = get_personal_scores(user)
-
-    problem_image_ids = [
-        image_id
-        for image_id, score in personal_scores.items()
-        if score >= MIN_PERSONAL_SCORE
-    ]
-
+def generate_trainer_images(user, limit: int = 10):
+    personal_scores = get_personal_error_scores(user)
+    problem_image_ids = get_problem_images(user)
     similarity_scores = get_similarity_scores(problem_image_ids)
 
-    final_scores = []
+    attempted_image_ids = set(
+        UserImagePerformance.objects.filter(user=user).values_list("image_id", flat=True)
+    )
 
-    all_images = CellImage.objects.all()
-
-    perf_map = {
-        perf.image_id: perf
-        for perf in UserImagePerformance.objects.filter(user=user)
-    }
+    all_images = list(CellImage.objects.select_related("cell").all())
+    seen_in_scoring = set()
+    scored = []
 
     for image in all_images:
         personal = personal_scores.get(image.id, 0.0)
-        similar = similarity_scores.get(image.id, 0.0)
-
-        perf = perf_map.get(image.id)
-        attempts = perf.total_attempts if perf else 0
-        novelty = math.exp(-attempts)
+        similarity = similarity_scores.get(image.id, 0.0)
+        novelty = 1.0 if image.id not in attempted_image_ids else 0.0
 
         score = (
-            PERSONAL_WEIGHT * personal +
-            SIMILARITY_WEIGHT * similar +
-            NOVELTY_WEIGHT * novelty
+            0.60 * personal
+            + 0.30 * similarity
+            + 0.10 * novelty
         )
 
-        final_scores.append((score, image))
+        if score > 0:
+            seen_in_scoring.add(image.id)
+            source = TestSessionImage.Source.PERSONAL_ERROR if personal >= similarity else TestSessionImage.Source.SIMILAR
+            if novelty == 1.0 and personal == 0 and similarity == 0:
+                source = TestSessionImage.Source.NOVEL
+            scored.append((image, source, score))
 
-    final_scores.sort(key=lambda x: x[0], reverse=True)
-    return [image for _, image in final_scores[:limit]]
+    scored.sort(key=lambda x: x[2], reverse=True)
+
+    selected = scored[: max(1, int(limit * 0.8))]
+    selected_ids = {item[0].id for item in selected}
+
+    novel_pool = [
+        img for img in all_images
+        if img.id not in selected_ids
+    ]
+    random.shuffle(novel_pool)
+
+    while len(selected) < limit and novel_pool:
+        img = novel_pool.pop()
+        selected.append((img, TestSessionImage.Source.NOVEL, 0.1))
+
+    return selected[:limit]

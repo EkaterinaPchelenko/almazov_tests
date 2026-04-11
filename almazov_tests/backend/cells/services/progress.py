@@ -1,52 +1,81 @@
+from django.db import transaction
+from django.db.models import F
 from django.utils import timezone
 
-from cells.models import GlobalImageStats, UserImageAnswer, UserImagePerformance
+from cells.models import (
+    GlobalImageStats,
+    TestSession,
+    TestSessionImage,
+    UserImageAnswer,
+    UserImagePerformance,
+)
+from cells.services.answers import normalize_answer
 
 
-def normalize_answer(value: str) -> str:
-    return (value or "").strip().lower()
+@transaction.atomic
+def save_answer(
+    *,
+    session: TestSession,
+    session_image: TestSessionImage,
+    user_answer: str,
+    response_time_ms: int | None = None,
+) -> UserImageAnswer:
+    normalized_user_answer = normalize_answer(user_answer)
+    correct_answer = normalize_answer(session_image.image.cell.name)
+    is_correct = normalized_user_answer == correct_answer
 
-
-def check_answer(user_answer: str, correct_name: str) -> bool:
-    return normalize_answer(user_answer) == normalize_answer(correct_name)
-
-
-def save_answer(session, image, user_answer, order_number):
-    normalized = normalize_answer(user_answer)
-    correct_name = normalize_answer(image.cell.name)
-    is_correct = normalized == correct_name
-
-    UserImageAnswer.objects.create(
+    answer = UserImageAnswer.objects.create(
         session=session,
-        image=image,
-        order_number=order_number,
+        session_image=session_image,
+        image=session_image.image,
+        order_number=session_image.order_number,
         user_answer=user_answer,
-        normalized_answer=normalized,
+        normalized_answer=normalized_user_answer,
         is_correct=is_correct,
+        response_time_ms=response_time_ms,
     )
 
-    perf, _ = UserImagePerformance.objects.get_or_create(
+    session_image.is_answered = True
+    session_image.save(update_fields=["is_answered"])
+
+    performance, _ = UserImagePerformance.objects.get_or_create(
         user=session.user,
-        image=image,
+        image=session_image.image,
+        defaults={
+            "total_attempts": 0,
+            "correct_attempts": 0,
+            "wrong_attempts": 0,
+        },
     )
-    perf.total_attempts += 1
-    perf.last_attempt_at = timezone.now()
 
+    performance.total_attempts = F("total_attempts") + 1
     if is_correct:
-        perf.correct_attempts += 1
+        performance.correct_attempts = F("correct_attempts") + 1
     else:
-        perf.wrong_attempts += 1
+        performance.wrong_attempts = F("wrong_attempts") + 1
+    performance.last_attempt_at = timezone.now()
+    performance.save()
 
-    perf.save()
-
-    stats, _ = GlobalImageStats.objects.get_or_create(image=image)
-    stats.total_attempts += 1
+    global_stats, _ = GlobalImageStats.objects.get_or_create(
+        image=session_image.image,
+        defaults={
+            "total_attempts": 0,
+            "total_correct": 0,
+        },
+    )
+    global_stats.total_attempts = F("total_attempts") + 1
     if is_correct:
-        stats.total_correct += 1
-    stats.save()
+        global_stats.total_correct = F("total_correct") + 1
+    global_stats.save()
 
     if is_correct:
-        session.correct_answers += 1
+        session.correct_answers = F("correct_answers") + 1
         session.save(update_fields=["correct_answers"])
 
-    return is_correct
+    unanswered_exists = session.session_images.filter(is_answered=False).exists()
+    if not unanswered_exists:
+        session.status = TestSession.Status.COMPLETED
+        session.finished_at = timezone.now()
+        session.save(update_fields=["status", "finished_at"])
+
+    return answer

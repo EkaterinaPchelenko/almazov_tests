@@ -1,16 +1,17 @@
 {% extends "base.html" %}
+
+{% block title %}Тестирование | Medical Cell Trainer{% endblock %}
+
 {% block content %}
-<div>
-    <h2>Определите клетку</h2>
-    <p>{{ order_number }} / {{ total }}</p>
-    <progress value="{{ percent }}" max="100"></progress>
-
-    <img src="{{ image.image.url }}" alt="Cell image" style="max-width: 400px;">
-
-    <form method="post" action="{% url 'submit_answer' session.id %}">
-        {% csrf_token %}
-        <input type="text" name="answer" placeholder="Введите название клетки">
-        <button type="submit">Ответить</button>
-    </form>
+<div
+    id="test-container"
+    hx-get="{% url 'test_question_partial' session.id %}"
+    hx-trigger="load"
+    hx-target="#test-container"
+    hx-swap="innerHTML"
+>
+    <div class="card" style="padding: 32px;">
+        Загрузка вопроса...
+    </div>
 </div>
 {% endblock %}

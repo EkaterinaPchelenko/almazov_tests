@@ -1,0 +1,78 @@
+<section class="test-layout">
+    <div class="card image-panel">
+        <div class="panel-header">
+            <div>
+                <h1 class="question-title">
+                    {% if answer.is_correct %}
+                        Ответ верный
+                    {% else %}
+                        Ответ неверный
+                    {% endif %}
+                </h1>
+                <p class="question-subtitle">
+                    {% if answer.is_correct %}
+                        Отлично, вы правильно определили тип клетки.
+                    {% else %}
+                        Проверьте правильный ответ и переходите к следующему изображению.
+                    {% endif %}
+                </p>
+            </div>
+
+            <div class="question-index">
+                {{ answer.order_number }} / {{ session.total_questions }}
+            </div>
+        </div>
+
+        <div class="image-frame">
+            {% if answer.image.image %}
+                <img src="{{ answer.image.image.url }}" alt="{{ answer.image.cell.name }}">
+            {% else %}
+                <div style="text-align: center; color: var(--text-soft);">
+                    Изображение недоступно
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <aside class="card answer-panel">
+        <div class="answer-stack">
+            {% if answer.is_correct %}
+                <span class="pill" style="background: rgba(39,174,96,.14); color: var(--success);">
+                    Верно
+                </span>
+            {% else %}
+                <span class="pill" style="background: rgba(235,87,87,.12); color: var(--danger);">
+                    Ошибка
+                </span>
+            {% endif %}
+
+            <div class="meta-list">
+                <div class="meta-item">
+                    <span class="meta-item__label">Ваш ответ</span>
+                    <span class="meta-item__value">{{ answer.user_answer }}</span>
+                </div>
+
+                <div class="meta-item">
+                    <span class="meta-item__label">Правильный ответ</span>
+                    <span class="meta-item__value">{{ answer.image.cell.name }}</span>
+                </div>
+
+                <div class="meta-item">
+                    <span class="meta-item__label">Результат</span>
+                    <span class="meta-item__value">
+                        {% if answer.is_correct %}Правильно{% else %}Неправильно{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <button
+                class="btn btn--primary btn--full"
+                hx-get="{% url 'test_question_partial' session.id %}"
+                hx-target="#test-container"
+                hx-swap="innerHTML"
+            >
+                Далее
+            </button>
+        </div>
+    </aside>
+</section>
