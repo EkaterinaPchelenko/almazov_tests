@@ -1,147 +1,310 @@
 {% extends "base.html" %}
-
 {% block title %}Вход | Medical Cell Trainer{% endblock %}
 
 {% block extra_css %}
 <style>
-    .auth-shell {
-        min-height: calc(100vh - 140px);
-        display: grid;
-        place-items: center;
+  .auth-page {
+    --auth-bg: #eef3fb;
+    --auth-surface: #ffffff;
+    --auth-stroke: #dbe4f0;
+    --auth-text: #0f172a;
+    --auth-muted: #6b7a90;
+    --auth-blue: #3167e3;
+    --auth-blue-soft: #eaf1ff;
+    --auth-shadow: 0 12px 30px rgba(34, 56, 120, 0.08);
+
+    min-height: calc(100vh - 120px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 36px 16px 52px;
+  }
+
+  .auth-page * {
+    box-sizing: border-box;
+  }
+
+  .auth-wrap {
+    width: 100%;
+    max-width: 720px;
+  }
+
+  .auth-brand {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .auth-brand__icon {
+    width: 76px;
+    height: 76px;
+    margin: 0 auto 18px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #3b74f2 0%, #2f67e3 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    box-shadow: 0 14px 28px rgba(49, 103, 227, 0.22);
+    font-size: 34px;
+  }
+
+  .auth-brand__title {
+    margin: 0;
+    font-size: 28px;
+    line-height: 1.2;
+    font-weight: 800;
+    color: var(--auth-text);
+    letter-spacing: -0.03em;
+  }
+
+  .auth-brand__subtitle {
+    margin: 10px 0 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--auth-muted);
+  }
+
+  .auth-card-v2 {
+    background: var(--auth-surface);
+    border: 1px solid var(--auth-stroke);
+    border-radius: 22px;
+    box-shadow: var(--auth-shadow);
+    overflow: hidden;
+  }
+
+  .auth-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 22px 22px 0;
+  }
+
+  .auth-tab {
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 15px;
+    text-decoration: none;
+    border: 1px solid transparent;
+    color: var(--auth-text);
+    background: transparent;
+    transition: 0.18s ease;
+  }
+
+  .auth-tab.is-active {
+    background: var(--auth-blue);
+    color: #fff;
+    box-shadow: 0 10px 18px rgba(49, 103, 227, 0.18);
+  }
+
+  .auth-tab.is-inactive:hover {
+    background: #f8fbff;
+    border-color: var(--auth-stroke);
+  }
+
+  .auth-content {
+    padding: 22px;
+  }
+
+  .auth-panel-title {
+    margin: 0 0 8px;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--auth-text);
+  }
+
+  .auth-panel-subtitle {
+    margin: 0 0 22px;
+    color: var(--auth-muted);
+    line-height: 1.6;
+    font-size: 14px;
+  }
+
+  .auth-form {
+    display: grid;
+    gap: 18px;
+  }
+
+  .auth-field {
+    display: grid;
+    gap: 8px;
+  }
+
+  .auth-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--auth-text);
+  }
+
+  .auth-input {
+    width: 100%;
+    min-height: 56px;
+    padding: 0 18px;
+    border-radius: 14px;
+    border: 1px solid #cfd8e6;
+    background: #f8fbff;
+    font-size: 16px;
+    color: var(--auth-text);
+    outline: none;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  }
+
+  .auth-input:focus {
+    border-color: var(--auth-blue);
+    box-shadow: 0 0 0 4px rgba(49, 103, 227, 0.10);
+    background: #fff;
+  }
+
+  .auth-errors {
+    border-radius: 14px;
+    padding: 12px 14px;
+    background: #fef2f2;
+    border: 1px solid #f4c7c7;
+    color: #b42318;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .auth-errors ul {
+    margin: 0;
+    padding-left: 18px;
+  }
+
+  .auth-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-size: 14px;
+    color: var(--auth-muted);
+  }
+
+  .auth-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .auth-link {
+    color: var(--auth-blue);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .auth-link:hover {
+    text-decoration: underline;
+  }
+
+  .auth-submit {
+    width: 100%;
+    min-height: 56px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #3b74f2 0%, #2f67e3 100%);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.18s ease, filter 0.18s ease;
+  }
+
+  .auth-submit:hover {
+    transform: translateY(-1px);
+    filter: brightness(0.98);
+  }
+
+  .auth-note {
+    text-align: center;
+    margin-top: 28px;
+    color: var(--auth-muted);
+    font-size: 13px;
+  }
+
+  @media (max-width: 640px) {
+    .auth-brand__title {
+      font-size: 24px;
     }
 
-    .auth-card {
-        width: 100%;
-        max-width: 520px;
-        padding: 34px;
+    .auth-content,
+    .auth-tabs {
+      padding-left: 16px;
+      padding-right: 16px;
     }
 
-    .auth-header {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        margin-bottom: 24px;
-        text-align: center;
+    .auth-row {
+      align-items: flex-start;
+      flex-direction: column;
     }
-
-    .auth-title {
-        margin: 0;
-        font-size: 34px;
-        font-weight: 800;
-        letter-spacing: -0.04em;
-    }
-
-    .auth-subtitle {
-        margin: 0;
-        color: var(--text-soft);
-        line-height: 1.65;
-        font-size: 15px;
-    }
-
-    .auth-form {
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
-    }
-
-    .auth-field {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .auth-field label {
-        font-size: 14px;
-        font-weight: 700;
-        color: var(--text);
-    }
-
-    .auth-input {
-        width: 100%;
-        min-height: 56px;
-        padding: 0 18px;
-        border-radius: 16px;
-        border: 1px solid var(--stroke);
-        background: #fff;
-        font-size: 15px;
-        color: var(--text);
-        outline: none;
-        transition: 0.2s ease;
-    }
-
-    .auth-input:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 4px rgba(31, 142, 241, 0.12);
-    }
-
-    .auth-errors {
-        padding: 14px 16px;
-        border-radius: 14px;
-        background: rgba(235, 87, 87, 0.08);
-        border: 1px solid rgba(235, 87, 87, 0.18);
-        color: #b63d3d;
-        font-size: 14px;
-        line-height: 1.6;
-    }
-
-    .auth-footer {
-        text-align: center;
-        font-size: 14px;
-        color: var(--text-soft);
-    }
-
-    .auth-footer a {
-        color: var(--primary);
-        font-weight: 700;
-    }
+  }
 </style>
 {% endblock %}
 
 {% block content %}
-<section class="auth-shell">
-    <div class="card card--soft auth-card">
-        <div class="auth-header">
-            <span class="pill" style="justify-content: center;">Авторизация</span>
-            <h1 class="auth-title">Вход в систему</h1>
-            <p class="auth-subtitle">
-                Войдите, чтобы проходить тесты, сохранять результаты и использовать адаптивный тренажёр.
-            </p>
-        </div>
+<section class="auth-page">
+  <div class="auth-wrap">
+    <div class="auth-brand">
+      <div class="auth-brand__icon">🔬</div>
+      <h1 class="auth-brand__title">Medical Cell Testing System</h1>
+      <p class="auth-brand__subtitle">
+        Adaptive Learning Platform for Medical Students
+      </p>
+    </div>
+
+    <div class="auth-card-v2">
+      <div class="auth-tabs">
+        <a href="{% url 'login' %}" class="auth-tab is-active">Login</a>
+        <a href="{% url 'register' %}" class="auth-tab is-inactive">Register</a>
+      </div>
+
+      <div class="auth-content">
+        <h2 class="auth-panel-title">Welcome Back</h2>
+        <p class="auth-panel-subtitle">
+          Войдите, чтобы продолжить обучение, проходить тесты и сохранять результаты.
+        </p>
 
         <form method="post" class="auth-form">
-            {% csrf_token %}
+          {% csrf_token %}
 
-            {% if form.non_field_errors %}
-                <div class="auth-errors">
-                    {{ form.non_field_errors }}
-                </div>
+          {% if form.non_field_errors %}
+            <div class="auth-errors">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          <div class="auth-field">
+            <label class="auth-label" for="{{ form.username.id_for_label }}">Email Address or Username</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+              <div class="auth-errors">{{ form.username.errors }}</div>
             {% endif %}
+          </div>
 
-            <div class="auth-field">
-                <label for="{{ form.username.id_for_label }}">Логин или email</label>
-                {{ form.username }}
-                {% if form.username.errors %}
-                    <div class="auth-errors">{{ form.username.errors }}</div>
-                {% endif %}
-            </div>
+          <div class="auth-field">
+            <label class="auth-label" for="{{ form.password.id_for_label }}">Password</label>
+            {{ form.password }}
+            {% if form.password.errors %}
+              <div class="auth-errors">{{ form.password.errors }}</div>
+            {% endif %}
+          </div>
 
-            <div class="auth-field">
-                <label for="{{ form.password.id_for_label }}">Пароль</label>
-                {{ form.password }}
-                {% if form.password.errors %}
-                    <div class="auth-errors">{{ form.password.errors }}</div>
-                {% endif %}
-            </div>
+          <div class="auth-row">
+            <label class="auth-check">
+              <input type="checkbox" name="remember_me">
+              <span>Remember me</span>
+            </label>
+            <span class="auth-link" style="opacity: 0.7; cursor: default;">Forgot password?</span>
+          </div>
 
-            <button type="submit" class="btn btn--primary btn--full">
-                Войти
-            </button>
+          <button type="submit" class="auth-submit">Sign In</button>
         </form>
-
-        <div class="auth-footer" style="margin-top: 20px;">
-            Нет аккаунта?
-            <a href="{% url 'register' %}">Зарегистрироваться</a>
-        </div>
+      </div>
     </div>
+
+    <div class="auth-note">
+      For educational purposes only. University Project 2026.
+    </div>
+  </div>
 </section>
 {% endblock %}
