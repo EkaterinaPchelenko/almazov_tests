@@ -1,13 +1,16 @@
+import random
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from .models import TestSession
+from .models import Cell, TestSession
 from .services.progress import save_answer
 from .services.random_test import generate_random_images
 from .services.trainer_test import generate_trainer_images
 
 TEST_LENGTH = 10
+CHOICE_COUNT = 4
 
 
 @login_required
@@ -60,6 +63,25 @@ def test_page(request, session_id):
     return render(request, "test.html", {"session": session})
 
 
+def _build_answer_options(current_item, choice_count=CHOICE_COUNT):
+    """
+    Возвращает список вариантов ответов, где один вариант правильный.
+    В answer по-прежнему отправляется строка с названием клетки.
+    """
+    correct_name = current_item.image.cell.name
+
+    distractors = list(
+        Cell.objects.exclude(id=current_item.image.cell_id)
+        .values_list("name", flat=True)
+        .distinct()
+        .order_by("?")[: max(choice_count - 1, 0)]
+    )
+
+    options = [correct_name, *distractors]
+    random.shuffle(options)
+    return options
+
+
 @login_required
 def test_question_partial(request, session_id):
     session = get_object_or_404(
@@ -84,11 +106,13 @@ def test_question_partial(request, session_id):
                 "score": session.correct_answers,
                 "total": session.total_questions,
                 "percent": int((session.correct_answers / session.total_questions) * 100)
-                if session.total_questions else 0,
+                if session.total_questions
+                else 0,
             },
         )
 
     percent = int(((current_item.order_number - 1) / session.total_questions) * 100)
+    answer_options = _build_answer_options(current_item)
 
     return render(
         request,
@@ -99,6 +123,7 @@ def test_question_partial(request, session_id):
             "order_number": current_item.order_number,
             "total": session.total_questions,
             "percent": percent,
+            "answer_options": answer_options,
         },
     )
 
@@ -124,7 +149,8 @@ def submit_answer_htmx(request, session_id):
                 "score": session.correct_answers,
                 "total": session.total_questions,
                 "percent": int((session.correct_answers / session.total_questions) * 100)
-                if session.total_questions else 0,
+                if session.total_questions
+                else 0,
             },
         )
 

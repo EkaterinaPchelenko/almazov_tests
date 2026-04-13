@@ -1,129 +1,535 @@
-<section class="test-layout">
-    <div class="card image-panel">
-        <div class="panel-header">
-            <div>
-                <h1 class="question-title">Определите тип клетки</h1>
-                <p class="question-subtitle">
-                    Посмотрите на изображение и введите правильное название клетки.
-                </p>
-            </div>
+<style>
+  .test-question-v3 {
+    --tq-bg: #f5f7fb;
+    --tq-surface: #ffffff;
+    --tq-stroke: #dfe5ef;
+    --tq-stroke-strong: #cfd8e6;
+    --tq-text: #111827;
+    --tq-muted: #6b7280;
+    --tq-blue: #2f67e3;
+    --tq-blue-soft: #eaf1ff;
+    --tq-blue-soft-2: #edf3ff;
+    --tq-dark-frame: #07163a;
+    --tq-shadow: 0 10px 30px rgba(27, 39, 94, 0.08);
+  }
 
-            <div class="question-index">
-                {{ order_number }} / {{ total }}
-            </div>
+  .test-question-v3 * {
+    box-sizing: border-box;
+  }
+
+  .test-question-v3 {
+    color: var(--tq-text);
+  }
+
+  .test-question-v3 .test-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .test-question-v3 .test-topbar {
+    background: var(--tq-surface);
+    border: 1px solid var(--tq-stroke);
+    border-radius: 26px;
+    box-shadow: var(--tq-shadow);
+    padding: 22px 26px;
+  }
+
+  .test-question-v3 .test-topbar__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+
+  .test-question-v3 .test-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    color: var(--tq-blue);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .test-question-v3 .test-kicker__icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 12px;
+    background: var(--tq-blue);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 8px 18px rgba(47, 103, 227, 0.24);
+  }
+
+  .test-question-v3 .test-title {
+    margin: 0;
+    font-size: 34px;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    font-weight: 800;
+  }
+
+  .test-question-v3 .test-subtitle {
+    margin: 8px 0 0;
+    color: var(--tq-muted);
+    font-size: 18px;
+    line-height: 1.5;
+  }
+
+  .test-question-v3 .test-exit {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--tq-text);
+    font-weight: 700;
+    padding: 10px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--tq-stroke);
+    background: #fff;
+    transition: 0.2s ease;
+  }
+
+  .test-question-v3 .test-exit:hover {
+    border-color: var(--tq-blue);
+    color: var(--tq-blue);
+  }
+
+  .test-question-v3 .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+    font-size: 15px;
+    color: var(--tq-muted);
+    font-weight: 600;
+  }
+
+  .test-question-v3 .progress-track {
+    width: 100%;
+    height: 10px;
+    background: #ebf0f7;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .test-question-v3 .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #2f67e3 0%, #4d86ff 100%);
+    border-radius: 999px;
+    transition: width 0.25s ease;
+  }
+
+  .test-question-v3 .content-grid {
+    display: grid;
+    grid-template-columns: 1fr 0.98fr;
+    gap: 22px;
+    align-items: stretch;
+  }
+
+  .test-question-v3 .panel {
+    background: var(--tq-surface);
+    border: 1px solid var(--tq-stroke);
+    border-radius: 22px;
+    box-shadow: var(--tq-shadow);
+    padding: 28px;
+  }
+
+  .test-question-v3 .panel-title {
+    margin: 0 0 20px;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--tq-text);
+  }
+
+  .test-question-v3 .microscope-frame {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 18px;
+    background: var(--tq-dark-frame);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(13, 27, 67, 0.65);
+  }
+
+  .test-question-v3 .microscope-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    background: var(--tq-dark-frame);
+  }
+
+  .test-question-v3 .image-fallback {
+    color: rgba(255,255,255,0.75);
+    font-size: 15px;
+    text-align: center;
+    padding: 24px;
+  }
+
+  .test-question-v3 .hint-box {
+    margin-top: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 18px;
+    border-radius: 16px;
+    background: var(--tq-blue-soft-2);
+    border: 1px solid #cfe0ff;
+    color: #42526b;
+    line-height: 1.55;
+    font-size: 14px;
+  }
+
+  .test-question-v3 .hint-box__icon {
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid #b9d0ff;
+    color: var(--tq-blue);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    margin-top: 1px;
+  }
+
+  .test-question-v3 .question-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .test-question-v3 .question-counter {
+    color: var(--tq-muted);
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .test-question-v3 .question-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--tq-blue-soft);
+    color: var(--tq-blue);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .test-question-v3 .question-heading {
+    margin: 0 0 24px;
+    font-size: 18px;
+    line-height: 1.45;
+    font-weight: 700;
+    color: var(--tq-text);
+  }
+
+  .test-question-v3 .choice-list {
+    display: grid;
+    gap: 14px;
+  }
+
+  .test-question-v3 .choice-item {
+    position: relative;
+  }
+
+  .test-question-v3 .choice-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .test-question-v3 .choice-label {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-height: 68px;
+    padding: 0 18px;
+    border-radius: 16px;
+    border: 1px solid var(--tq-stroke-strong);
+    background: #fff;
+    cursor: pointer;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--tq-text);
+  }
+
+  .test-question-v3 .choice-label:hover {
+    border-color: #a9bfef;
+    background: #fbfcff;
+  }
+
+  .test-question-v3 .choice-radio {
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    border: 2px solid #c5cfdf;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    transition: border-color 0.18s ease, background 0.18s ease;
+  }
+
+  .test-question-v3 .choice-radio::after {
+    content: "";
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    background: transparent;
+    transition: background 0.18s ease;
+  }
+
+  .test-question-v3 .choice-input:checked + .choice-label {
+    border-color: var(--tq-blue);
+    background: #f8fbff;
+    box-shadow: 0 0 0 4px rgba(47, 103, 227, 0.10);
+  }
+
+  .test-question-v3 .choice-input:checked + .choice-label .choice-radio {
+    border-color: var(--tq-blue);
+  }
+
+  .test-question-v3 .choice-input:checked + .choice-label .choice-radio::after {
+    background: var(--tq-blue);
+  }
+
+  .test-question-v3 .submit-btn {
+    width: 100%;
+    min-height: 58px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #92adef 0%, #7d9fe8 100%);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.18s ease, filter 0.18s ease;
+  }
+
+  .test-question-v3 .submit-btn:hover {
+    filter: brightness(0.98);
+    transform: translateY(-1px);
+  }
+
+  .test-question-v3 .submit-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+    transform: none;
+  }
+
+  .test-question-v3 .info-list {
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 1px solid #e8edf5;
+    display: grid;
+    gap: 12px;
+  }
+
+  .test-question-v3 .info-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    font-size: 14px;
+  }
+
+  .test-question-v3 .info-label {
+    color: var(--tq-muted);
+    font-weight: 600;
+  }
+
+  .test-question-v3 .info-value {
+    color: var(--tq-text);
+    font-weight: 700;
+    text-align: right;
+  }
+
+  @media (max-width: 1100px) {
+    .test-question-v3 .content-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .test-question-v3 .test-topbar,
+    .test-question-v3 .panel {
+      padding: 20px;
+      border-radius: 18px;
+    }
+
+    .test-question-v3 .test-title {
+      font-size: 26px;
+    }
+
+    .test-question-v3 .test-subtitle {
+      font-size: 15px;
+    }
+
+    .test-question-v3 .microscope-frame {
+      aspect-ratio: 4 / 3;
+    }
+
+    .test-question-v3 .choice-label {
+      min-height: 60px;
+      font-size: 15px;
+    }
+  }
+</style>
+
+<section class="test-question-v3">
+  <div class="test-shell">
+    <header class="test-topbar">
+      <div class="test-topbar__row">
+        <div>
+          <div class="test-kicker">
+            <span class="test-kicker__icon">🔬</span>
+            <span>Cell Identification Test</span>
+          </div>
+          <h1 class="test-title">Cell Identification Test</h1>
+          <p class="test-subtitle">Single Choice Question</p>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 18px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
-                {% if session.mode == "trainer" %}
-                    <span class="mode-badge mode-badge--trainer">Adaptive trainer</span>
-                {% else %}
-                    <span class="mode-badge mode-badge--random">Random test</span>
-                {% endif %}
+        <a href="{% url 'dashboard' %}" class="test-exit">
+          <span style="font-size: 18px; line-height: 1;">×</span>
+          <span>Exit Test</span>
+        </a>
+      </div>
 
-                <div style="font-size: 14px; color: var(--text-soft); font-weight: 600;">
-                    Прогресс: {{ percent }}%
-                </div>
-            </div>
+      <div class="progress-meta">
+        <span>Question {{ order_number }} of {{ total }}</span>
+        <span>{{ percent }}%</span>
+      </div>
 
-            <div class="progress">
-                <div class="progress__bar" style="width: {{ percent }}%;"></div>
-            </div>
+      <div class="progress-track" aria-label="progress">
+        <div class="progress-bar" style="width: {{ percent }}%;"></div>
+      </div>
+    </header>
+
+    <div class="content-grid">
+      <div class="panel">
+        <h2 class="panel-title">Microscope Image</h2>
+
+        <div class="microscope-frame">
+          {% if image.image %}
+            <img src="{{ image.image.url }}" alt="{{ image.cell.name }}">
+          {% else %}
+            <div class="image-fallback">Изображение недоступно</div>
+          {% endif %}
         </div>
 
-        <div class="image-frame">
-            {% if image.image %}
-                <img src="{{ image.image.url }}" alt="{{ image.cell.name }}">
-            {% else %}
-                <div style="text-align: center; color: var(--text-soft);">
-                    Изображение недоступно
-                </div>
-            {% endif %}
+        <div class="hint-box">
+          <span class="hint-box__icon">i</span>
+          <div>
+            Examine the cell structure carefully. Look for distinctive features such as
+            shape, nucleus, and any specialized organelles.
+          </div>
         </div>
+      </div>
+
+      <aside class="panel">
+        <div class="question-meta">
+          <span class="question-counter">Question {{ order_number }}</span>
+
+          {% if session.mode == "trainer" %}
+            <span class="question-badge">Single Choice</span>
+          {% else %}
+            <span class="question-badge">Single Choice</span>
+          {% endif %}
+        </div>
+
+        <h3 class="question-heading">
+          Identify the cell type shown in the microscope image.
+        </h3>
+
+        <form
+          id="answer-form"
+          hx-post="{% url 'submit_answer_htmx' session.id %}"
+          hx-target="#test-container"
+          hx-swap="innerHTML"
+        >
+          {% csrf_token %}
+          <input type="hidden" name="response_time_ms" id="response_time_ms">
+
+          <div class="choice-list">
+            {% for option in answer_options %}
+              <div class="choice-item">
+                <input
+                  class="choice-input"
+                  type="radio"
+                  id="choice-{{ forloop.counter }}"
+                  name="answer"
+                  value="{{ option }}"
+                  required
+                >
+                <label class="choice-label" for="choice-{{ forloop.counter }}">
+                  <span class="choice-radio"></span>
+                  <span>{{ option }}</span>
+                </label>
+              </div>
+            {% endfor %}
+          </div>
+
+          <button type="submit" class="submit-btn" id="submit-btn">
+            Submit Answer
+          </button>
+        </form>
+
+        <div class="info-list">
+          <div class="info-row">
+            <span class="info-label">Mode</span>
+            <span class="info-value">
+              {% if session.mode == "trainer" %}
+                Adaptive trainer
+              {% else %}
+                Random test
+              {% endif %}
+            </span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">Question</span>
+            <span class="info-value">{{ order_number }} / {{ total }}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">Progress</span>
+            <span class="info-value">{{ percent }}%</span>
+          </div>
+        </div>
+      </aside>
     </div>
-
-    <aside class="card answer-panel">
-        <div class="answer-stack">
-            <div>
-                <span class="pill">Ответ студента</span>
-            </div>
-
-            <div>
-                <h2 style="margin: 0 0 8px; font-size: 24px; font-weight: 800; letter-spacing: -0.03em;">
-                    Введите название клетки
-                </h2>
-                <p class="section-text" style="font-size: 14px;">
-                    Используйте точное медицинское название.
-                </p>
-            </div>
-
-            <form
-                id="answer-form"
-                hx-post="{% url 'submit_answer_htmx' session.id %}"
-                hx-target="#test-container"
-                hx-swap="innerHTML"
-                style="display: flex; flex-direction: column; gap: 18px;"
-            >
-                {% csrf_token %}
-                <input type="hidden" name="response_time_ms" id="response_time_ms">
-
-                <div class="field">
-                    <label for="answer">Ваш ответ</label>
-                    <input
-                        id="answer"
-                        name="answer"
-                        type="text"
-                        placeholder="Например: нейтрофил"
-                        autocomplete="off"
-                        required
-                        autofocus
-                    >
-                    <div class="helper-text">
-                        Регистр не имеет значения, но старайтесь вводить без сокращений.
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn--primary btn--full">
-                    Ответить
-                </button>
-            </form>
-
-            <div class="meta-list">
-                <div class="meta-item">
-                    <span class="meta-item__label">Режим</span>
-                    <span class="meta-item__value">
-                        {% if session.mode == "trainer" %}
-                            Тест-тренажёр
-                        {% else %}
-                            Случайный тест
-                        {% endif %}
-                    </span>
-                </div>
-
-                <div class="meta-item">
-                    <span class="meta-item__label">Вопрос</span>
-                    <span class="meta-item__value">{{ order_number }} из {{ total }}</span>
-                </div>
-
-                <div class="meta-item">
-                    <span class="meta-item__label">Текущий прогресс</span>
-                    <span class="meta-item__value">{{ percent }}%</span>
-                </div>
-            </div>
-        </div>
-    </aside>
+  </div>
 </section>
 
 <script>
-    (function () {
-        const startedAt = Date.now();
-        const form = document.getElementById("answer-form");
-        const responseField = document.getElementById("response_time_ms");
+  (function () {
+    const startedAt = Date.now();
+    const form = document.getElementById("answer-form");
+    const responseField = document.getElementById("response_time_ms");
 
-        if (form && responseField) {
-            form.addEventListener("submit", function () {
-                responseField.value = Date.now() - startedAt;
-            });
-        }
-    })();
+    if (form && responseField) {
+      form.addEventListener("submit", function () {
+        responseField.value = Date.now() - startedAt;
+      });
+    }
+  })();
 </script>

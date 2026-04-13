@@ -1,78 +1,349 @@
-<section class="test-layout">
-    <div class="card image-panel">
-        <div class="panel-header">
-            <div>
-                <h1 class="question-title">
-                    {% if answer.is_correct %}
-                        Ответ верный
-                    {% else %}
-                        Ответ неверный
-                    {% endif %}
-                </h1>
-                <p class="question-subtitle">
-                    {% if answer.is_correct %}
-                        Отлично, вы правильно определили тип клетки.
-                    {% else %}
-                        Проверьте правильный ответ и переходите к следующему изображению.
-                    {% endif %}
-                </p>
-            </div>
+<style>
+  .answer-feedback-v2 {
+    --af-bg: #f5f7fb;
+    --af-surface: #ffffff;
+    --af-stroke: #dfe5ef;
+    --af-text: #111827;
+    --af-muted: #6b7280;
+    --af-blue: #2f67e3;
+    --af-blue-soft: #eef4ff;
+    --af-shadow: 0 10px 30px rgba(27, 39, 94, 0.08);
 
-            <div class="question-index">
-                {{ answer.order_number }} / {{ session.total_questions }}
-            </div>
-        </div>
+    --af-success: #16a34a;
+    --af-success-soft: #ecfdf3;
+    --af-success-border: #b7ebc6;
 
-        <div class="image-frame">
-            {% if answer.image.image %}
-                <img src="{{ answer.image.image.url }}" alt="{{ answer.image.cell.name }}">
-            {% else %}
-                <div style="text-align: center; color: var(--text-soft);">
-                    Изображение недоступно
-                </div>
-            {% endif %}
-        </div>
-    </div>
+    --af-danger: #dc2626;
+    --af-danger-soft: #fef2f2;
+    --af-danger-border: #f3c2c2;
+  }
 
-    <aside class="card answer-panel">
-        <div class="answer-stack">
+  .answer-feedback-v2 * {
+    box-sizing: border-box;
+  }
+
+  .answer-feedback-v2 {
+    color: var(--af-text);
+  }
+
+  .answer-feedback-v2 .feedback-shell {
+    max-width: 920px;
+    margin: 0 auto;
+  }
+
+  .answer-feedback-v2 .feedback-card {
+    background: var(--af-surface);
+    border: 1px solid var(--af-stroke);
+    border-radius: 24px;
+    box-shadow: var(--af-shadow);
+    overflow: hidden;
+  }
+
+  .answer-feedback-v2 .feedback-header {
+    padding: 28px 30px 22px;
+    border-bottom: 1px solid #edf1f7;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+
+  .answer-feedback-v2 .feedback-title-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .answer-feedback-v2 .feedback-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex: 0 0 auto;
+  }
+
+  .answer-feedback-v2 .feedback-card.is-correct .feedback-icon {
+    background: var(--af-success-soft);
+    color: var(--af-success);
+    border: 1px solid var(--af-success-border);
+  }
+
+  .answer-feedback-v2 .feedback-card.is-wrong .feedback-icon {
+    background: var(--af-danger-soft);
+    color: var(--af-danger);
+    border: 1px solid var(--af-danger-border);
+  }
+
+  .answer-feedback-v2 .feedback-kicker {
+    margin: 0 0 6px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--af-muted);
+  }
+
+  .answer-feedback-v2 .feedback-heading {
+    margin: 0;
+    font-size: 28px;
+    line-height: 1.15;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .answer-feedback-v2 .feedback-subtitle {
+    margin: 8px 0 0;
+    color: var(--af-muted);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .answer-feedback-v2 .feedback-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .answer-feedback-v2 .feedback-card.is-correct .feedback-status-badge {
+    background: var(--af-success-soft);
+    color: var(--af-success);
+    border: 1px solid var(--af-success-border);
+  }
+
+  .answer-feedback-v2 .feedback-card.is-wrong .feedback-status-badge {
+    background: var(--af-danger-soft);
+    color: var(--af-danger);
+    border: 1px solid var(--af-danger-border);
+  }
+
+  .answer-feedback-v2 .feedback-body {
+    padding: 26px 30px 30px;
+    display: grid;
+    gap: 18px;
+  }
+
+  .answer-feedback-v2 .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .answer-feedback-v2 .result-box {
+    border-radius: 18px;
+    padding: 18px 20px;
+    border: 1px solid var(--af-stroke);
+    background: #fbfcff;
+  }
+
+  .answer-feedback-v2 .result-label {
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--af-muted);
+  }
+
+  .answer-feedback-v2 .result-value {
+    margin: 0;
+    font-size: 20px;
+    line-height: 1.35;
+    font-weight: 800;
+    color: var(--af-text);
+    word-break: break-word;
+  }
+
+  .answer-feedback-v2 .feedback-note {
+    border-radius: 18px;
+    padding: 18px 20px;
+    line-height: 1.65;
+    font-size: 15px;
+  }
+
+  .answer-feedback-v2 .feedback-card.is-correct .feedback-note {
+    background: var(--af-success-soft);
+    border: 1px solid var(--af-success-border);
+    color: #166534;
+  }
+
+  .answer-feedback-v2 .feedback-card.is-wrong .feedback-note {
+    background: var(--af-danger-soft);
+    border: 1px solid var(--af-danger-border);
+    color: #991b1b;
+  }
+
+  .answer-feedback-v2 .feedback-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 4px;
+  }
+
+  .answer-feedback-v2 .next-btn {
+    min-width: 220px;
+    min-height: 56px;
+    border: none;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #92adef 0%, #7d9fe8 100%);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.18s ease, filter 0.18s ease;
+  }
+
+  .answer-feedback-v2 .next-btn:hover {
+    filter: brightness(0.98);
+    transform: translateY(-1px);
+  }
+
+  .answer-feedback-v2 .feedback-footer-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-top: 4px;
+  }
+
+  .answer-feedback-v2 .meta-item {
+    font-size: 14px;
+    color: var(--af-muted);
+  }
+
+  .answer-feedback-v2 .meta-item strong {
+    color: var(--af-text);
+  }
+
+  @media (max-width: 760px) {
+    .answer-feedback-v2 .feedback-header,
+    .answer-feedback-v2 .feedback-body {
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+
+    .answer-feedback-v2 .feedback-heading {
+      font-size: 23px;
+    }
+
+    .answer-feedback-v2 .result-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .answer-feedback-v2 .feedback-actions {
+      justify-content: stretch;
+    }
+
+    .answer-feedback-v2 .next-btn {
+      width: 100%;
+      min-width: 0;
+    }
+  }
+</style>
+
+<section class="answer-feedback-v2">
+  <div class="feedback-shell">
+    <div class="feedback-card {% if answer.is_correct %}is-correct{% else %}is-wrong{% endif %}">
+      <div class="feedback-header">
+        <div class="feedback-title-wrap">
+          <div class="feedback-icon">
             {% if answer.is_correct %}
-                <span class="pill" style="background: rgba(39,174,96,.14); color: var(--success);">
-                    Верно
-                </span>
+              ✓
             {% else %}
-                <span class="pill" style="background: rgba(235,87,87,.12); color: var(--danger);">
-                    Ошибка
-                </span>
+              ✕
             {% endif %}
+          </div>
 
-            <div class="meta-list">
-                <div class="meta-item">
-                    <span class="meta-item__label">Ваш ответ</span>
-                    <span class="meta-item__value">{{ answer.user_answer }}</span>
-                </div>
+          <div>
+            <p class="feedback-kicker">Answer Result</p>
 
-                <div class="meta-item">
-                    <span class="meta-item__label">Правильный ответ</span>
-                    <span class="meta-item__value">{{ answer.image.cell.name }}</span>
-                </div>
+            <h2 class="feedback-heading">
+              {% if answer.is_correct %}
+                Correct answer
+              {% else %}
+                Incorrect answer
+              {% endif %}
+            </h2>
 
-                <div class="meta-item">
-                    <span class="meta-item__label">Результат</span>
-                    <span class="meta-item__value">
-                        {% if answer.is_correct %}Правильно{% else %}Неправильно{% endif %}
-                    </span>
-                </div>
-            </div>
-
-            <button
-                class="btn btn--primary btn--full"
-                hx-get="{% url 'test_question_partial' session.id %}"
-                hx-target="#test-container"
-                hx-swap="innerHTML"
-            >
-                Далее
-            </button>
+            <p class="feedback-subtitle">
+              {% if answer.is_correct %}
+                Отлично — ты выбрал правильный вариант.
+              {% else %}
+                Не страшно — правильный ответ показан ниже.
+              {% endif %}
+            </p>
+          </div>
         </div>
-    </aside>
+
+        <div class="feedback-status-badge">
+          {% if answer.is_correct %}
+            Success
+          {% else %}
+            Try next
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="feedback-body">
+        <div class="result-grid">
+          <div class="result-box">
+            <p class="result-label">Ваш выбор</p>
+            <p class="result-value">{{ answer.user_answer|default:"—" }}</p>
+          </div>
+
+          <div class="result-box">
+            <p class="result-label">Правильный ответ</p>
+            <p class="result-value">{{ answer.image.cell.name }}</p>
+          </div>
+        </div>
+
+        <div class="feedback-note">
+          {% if answer.is_correct %}
+            Ты правильно определил тип клетки по микроскопическому изображению.
+            Нажми кнопку ниже, чтобы перейти к следующему вопросу.
+          {% else %}
+            Сравни свой выбор с правильным ответом и попробуй обратить внимание
+            на форму клетки, ядро и характерные морфологические признаки в следующем вопросе.
+          {% endif %}
+        </div>
+
+        <div class="feedback-footer-meta">
+          <div class="meta-item">
+            <strong>Режим:</strong>
+            {% if session.mode == "trainer" %}
+              adaptive trainer
+            {% else %}
+              random test
+            {% endif %}
+          </div>
+
+          <div class="meta-item">
+            <strong>Статус:</strong>
+            {% if answer.is_correct %}
+              ответ засчитан как верный
+            {% else %}
+              ответ засчитан как неверный
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="feedback-actions">
+          <button
+            class="next-btn"
+            hx-get="{% url 'test_question_partial' session.id %}"
+            hx-target="#test-container"
+            hx-swap="innerHTML"
+          >
+            Continue
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
