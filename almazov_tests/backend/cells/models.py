@@ -1,9 +1,9 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
 
 
 class Cell(models.Model):
-    name = models.CharField(max_length=255)  # Официальное название
+    name = models.CharField(max_length=255)
     latin_name = models.CharField(max_length=255, blank=True)
     description = models.TextField(blank=True)
 
@@ -15,7 +15,7 @@ class CellImage(models.Model):
     cell = models.ForeignKey(
         Cell,
         on_delete=models.CASCADE,
-        related_name="cell_image"
+        related_name="cell_images",
     )
     image = models.ImageField(upload_to="cells/")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -24,10 +24,102 @@ class CellImage(models.Model):
         return self.image.name
 
 
+class Level(models.Model):
+    class Badge(models.TextChoices):
+        BEGINNER = "beginner", "Beginner"
+        INTERMEDIATE = "intermediate", "Intermediate"
+        ADVANCED = "advanced", "Advanced"
+        EXPERT = "expert", "Expert"
+
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    order = models.PositiveIntegerField(unique=True)
+    badge = models.CharField(
+        max_length=30,
+        choices=Badge.choices,
+        default=Badge.BEGINNER,
+    )
+    required_completions = models.PositiveIntegerField(default=5)
+    question_count = models.PositiveIntegerField(default=10)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["order"]
+
+    def __str__(self):
+        return f"Level {self.order}: {self.title}"
+
+
+class LevelCell(models.Model):
+    level = models.ForeignKey(
+        Level,
+        on_delete=models.CASCADE,
+        related_name="level_cells",
+    )
+    cell = models.ForeignKey(
+        Cell,
+        on_delete=models.CASCADE,
+        related_name="cell_levels",
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["level", "cell"],
+                name="uq_level_cell",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.level} → {self.cell}"
+
+
+class UserLevelProgress(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="level_progress",
+    )
+    level = models.ForeignKey(
+        Level,
+        on_delete=models.CASCADE,
+        related_name="user_progress",
+    )
+    completions_count = models.PositiveIntegerField(default=0)
+    best_score = models.PositiveIntegerField(default=0)
+    last_score = models.PositiveIntegerField(default=0)
+    is_unlocked = models.BooleanField(default=False)
+    unlocked_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "level"],
+                name="uq_user_level_progress",
+            )
+        ]
+        ordering = ["level__order"]
+
+    def __str__(self):
+        return f"{self.user} - {self.level} ({self.completions_count})"
+
+    @property
+    def is_completed(self):
+        return self.completions_count >= self.level.required_completions
+
+    @property
+    def completion_percent(self):
+        if self.level.required_completions == 0:
+            return 0
+        return int((self.completions_count / self.level.required_completions) * 100)
+
+
 class TestSession(models.Model):
     class Mode(models.TextChoices):
         RANDOM = "random", "Random"
         TRAINER = "trainer", "Trainer"
+        LEVEL = "level", "Level"
 
     class Status(models.TextChoices):
         IN_PROGRESS = "in_progress", "In progress"
@@ -45,13 +137,21 @@ class TestSession(models.Model):
         choices=Status.choices,
         default=Status.IN_PROGRESS,
     )
+    level = models.ForeignKey(
+        Level,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="sessions",
+    )
+    level_attempt_number = models.PositiveSmallIntegerField(null=True, blank=True)
     started_at = models.DateTimeField(auto_now_add=True)
     finished_at = models.DateTimeField(null=True, blank=True)
     total_questions = models.PositiveIntegerField(default=0)
     correct_answers = models.PositiveIntegerField(default=0)
 
     def __str__(self):
-        return f"Session {self.id} - {self.user.email} - {self.mode}"
+        return f"Session {self.id} - {self.user} - {self.mode}"
 
 
 class TestSessionImage(models.Model):
@@ -60,6 +160,7 @@ class TestSessionImage(models.Model):
         PERSONAL_ERROR = "personal_error", "Personal error"
         SIMILAR = "similar", "Similar"
         NOVEL = "novel", "Novel"
+        LEVEL = "level", "Level"
 
     session = models.ForeignKey(
         TestSession,
@@ -172,8 +273,7 @@ class ImageSimilarity(models.Model):
 class GlobalImageStats(models.Model):
     image = models.OneToOneField(
         CellImage,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
     )
-
     total_attempts = models.PositiveIntegerField(default=0)
     total_correct = models.PositiveIntegerField(default=0)

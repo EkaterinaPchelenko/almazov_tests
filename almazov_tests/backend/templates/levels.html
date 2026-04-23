@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Уровни тестов | Medical Cell Trainer{% endblock %}
+
+{% block content %}
+<section class="card card--soft" style="padding: 28px; margin-bottom: 24px;">
+    <div style="display: flex; justify-content: space-between; gap: 20px; align-items: start; flex-wrap: wrap;">
+        <div>
+            <h1 class="section-title" style="font-size: 34px;">Уровни тестов</h1>
+            <p class="section-text" style="margin-top: 8px;">
+                Чтобы разблокировать следующий уровень, пройдите его успешно 5 раз.
+            </p>
+        </div>
+        <a href="{% url 'dashboard' %}" class="btn btn--secondary">Вернуться к профилю</a>
+    </div>
+</section>
+
+<section class="card" style="padding: 24px; margin-bottom: 24px; background: #edf4ff;">
+    <div style="display: flex; justify-content: space-between; gap: 20px; align-items: center; flex-wrap: wrap;">
+        <div>
+            <div style="font-size: 28px; font-weight: 800;">Ваш прогресс</div>
+            <div class="section-text" style="margin-top: 8px;">
+                {{ total_completions }}/{{ total_required }} всего выполнено ({{ overall_percent }}%)
+            </div>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 40px; font-weight: 800; color: #2f6df6;">
+                {{ unlocked_count }}/{{ total_levels }}
+            </div>
+            <div class="section-text">Разблокировано уровней</div>
+        </div>
+    </div>
+
+    <div class="progress" style="margin-top: 16px;">
+        <div class="progress__bar" style="width: {{ overall_percent }}%;"></div>
+    </div>
+</section>
+
+<section style="display: grid; gap: 18px;">
+    {% for item in levels %}
+        <article class="card" style="padding: 24px; {% if not item.is_unlocked %}opacity: 0.75;{% endif %}">
+            <div style="display: flex; justify-content: space-between; gap: 20px; align-items: start; flex-wrap: wrap;">
+                <div style="display: flex; gap: 18px; align-items: start;">
+                    <div style="
+                        width: 62px;
+                        height: 62px;
+                        border-radius: 50%;
+                        display: grid;
+                        place-items: center;
+                        font-weight: 800;
+                        font-size: 22px;
+                        color: white;
+                        background: {% if item.is_completed %}#16a34a{% elif item.is_unlocked %}#2f6df6{% else %}#b9c2cf{% endif %};
+                    ">
+                        {% if item.is_completed %}
+                            ✓
+                        {% elif item.is_unlocked %}
+                            {{ item.level.order }}
+                        {% else %}
+                            🔒
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                            <div style="font-size: 28px; font-weight: 800;">
+                                Уровень {{ item.level.order }}: {{ item.level.title }}
+                            </div>
+                            <span class="pill">{{ item.level.badge|title }}</span>
+                        </div>
+
+                        <div class="section-text" style="margin-top: 8px;">
+                            {{ item.level.description }}
+                        </div>
+
+                        <div class="section-text" style="margin-top: 14px;">
+                            Прогресс: {{ item.completions_count }}/{{ item.level.required_completions }} выполнено
+                        </div>
+                    </div>
+                </div>
+
+                <div style="font-size: 18px; font-weight: 700;">
+                    {{ item.completion_percent }}%
+                </div>
+            </div>
+
+            <div class="progress" style="margin-top: 14px;">
+                <div class="progress__bar" style="width: {{ item.completion_percent }}%;"></div>
+            </div>
+
+            <div style="margin-top: 18px; display: flex; gap: 12px; flex-wrap: wrap;">
+                {% if item.is_unlocked %}
+                    <a href="{% url 'start_level_test' item.level.id %}" class="btn btn--primary">
+                        {% if item.is_completed %}Практикуйтесь ещё{% else %}Начать тест{% endif %}
+                    </a>
+                {% else %}
+                    <button class="btn btn--secondary" disabled>
+                        Пройдите предыдущий уровень, чтобы разблокировать
+                    </button>
+                {% endif %}
+
+                {% if item.is_completed %}
+                    <span class="pill" style="background: rgba(22,163,74,0.12); color: #15803d;">Выполнено</span>
+                {% endif %}
+
+                {% if item.is_unlocked %}
+                    <span class="pill">Текущая попытка: {{ item.choice_count }} options</span>
+                {% endif %}
+            </div>
+        </article>
+    {% empty %}
+        <div class="card" style="padding: 24px;">
+            <div class="section-text">Levels are not configured yet.</div>
+        </div>
+    {% endfor %}
+</section>
+
+<section class="card" style="padding: 24px; margin-top: 24px; background: #eef4ff;">
+    <div style="font-size: 22px; font-weight: 800; margin-bottom: 12px;">How Level-Based Tests Work</div>
+    <ul style="margin: 0; padding-left: 20px; color: var(--text-soft); line-height: 1.8;">
+        <li>Each level contains questions of the same difficulty.</li>
+        <li>Complete each level 5 times to unlock the next.</li>
+        <li>Each next completion increases the number of answer options.</li>
+        <li>Progress is saved automatically.</li>
+    </ul>
+</section>
+{% endblock %}

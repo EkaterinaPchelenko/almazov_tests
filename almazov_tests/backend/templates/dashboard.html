@@ -1,83 +1,143 @@
 {% extends "base.html" %}
 
-{% block title %}Главная | Medical Cell Trainer{% endblock %}
+{% block title %}Профиль | Medical Cell Trainer{% endblock %}
 
 {% block content %}
-<section class="card card--soft" style="padding: 34px; margin-bottom: 24px;">
-    <div class="grid-2" style="align-items: center;">
-        <div style="display: flex; flex-direction: column; gap: 18px;">
-            <span class="pill">Медицинский тренажёр</span>
-
-            <h1 class="section-title">
-                Добро пожаловать,
-                {{ request.user.username|default:"студент" }}
-            </h1>
-
-            <p class="section-text" style="max-width: 650px;">
-                Тренируйте распознавание клеток по изображениям из гистологии и цитологии.
-                Система поддерживает два режима: случайный тест для общей практики и адаптивный тренажёр,
-                который подбирает изображения с учётом ваших ошибок.
+<section class="card card--soft" style="padding: 32px; margin-bottom: 24px;">
+    <div style="display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; align-items: center;">
+        <div>
+            <h1 class="section-title" style="font-size: 36px;">Welcome back, {{ request.user.username }}!</h1>
+            <p class="section-text" style="margin-top: 12px;">
+                Continue your learning journey and master cell identification.
             </p>
-
-            <div style="display: flex; flex-wrap: wrap; gap: 14px; margin-top: 8px;">
-                <a href="{% url 'start_test' 'random' %}" class="btn btn--secondary">
-                    Случайный тест
-                </a>
-                <a href="{% url 'start_test' 'trainer' %}" class="btn btn--primary">
-                    Адаптивный тренажёр
-                </a>
-            </div>
-        </div>
-
-        <div class="card" style="padding: 26px; background: linear-gradient(180deg, #f8fcff 0%, #eef7fb 100%);">
-            <div style="display: flex; flex-direction: column; gap: 18px;">
-                <div>
-                    <div style="font-size: 14px; font-weight: 700; color: var(--text-soft); margin-bottom: 8px;">
-                        Как это работает
-                    </div>
-                    <div style="display: grid; gap: 12px;">
-                        <div class="stat-card">
-                            <div class="stat-card__label">1. Изображение клетки</div>
-                            <div class="helper-text">Вы видите микроскопическое изображение и определяете тип клетки.</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-card__label">2. Ответ и проверка</div>
-                            <div class="helper-text">Система фиксирует правильность ответа и сохраняет персональную статистику.</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-card__label">3. Адаптивный подбор</div>
-                            <div class="helper-text">В тренажёре чаще показываются проблемные и похожие изображения.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </section>
 
-<section class="grid-3">
-    <article class="stat-card">
-        <div class="stat-card__label">Random mode</div>
-        <div class="stat-card__value">Свободная практика</div>
-        <div class="stat-card__hint">
-            Подходит для быстрого повторения материала без учёта прошлых ошибок.
+<section class="grid-3" style="margin-bottom: 24px;">
+    <a href="{% url 'start_test' 'random' %}" class="card" style="padding: 28px; display: block;">
+        <div class="stat-card__value" style="font-size: 28px;">Random Test</div>
+        <div class="section-text" style="margin-top: 10px;">
+            Take a test with randomly selected questions from the entire question bank.
         </div>
+    </a>
+
+    <a href="{% url 'start_test' 'trainer' %}" class="card" style="padding: 28px; display: block; border: 2px solid #2f6df6;">
+        <div class="stat-card__value" style="font-size: 28px;">Adaptive Test</div>
+        <div class="section-text" style="margin-top: 10px;">
+            Personalized test generated using collaborative filtering based on your performance.
+        </div>
+    </a>
+
+    <a href="{% url 'levels_page' %}" class="card" style="padding: 28px; display: block; border: 2px solid #19b35b;">
+        <div class="stat-card__value" style="font-size: 28px;">Level-Based Tests</div>
+        <div class="section-text" style="margin-top: 10px;">
+            Progress through levels of increasing difficulty. Complete each level 5 times to unlock the next.
+        </div>
+    </a>
+</section>
+
+<section class="card" style="padding: 20px; margin-bottom: 24px; text-align: center;">
+    <div style="font-size: 20px; font-weight: 700;">View Detailed Analytics</div>
+</section>
+
+<section class="grid-3" style="margin-bottom: 24px;">
+    <article class="stat-card">
+        <div class="stat-card__label">Average Accuracy</div>
+        <div class="stat-card__value">{{ average_accuracy }}%</div>
+        <div class="stat-card__hint">Based on all answered questions</div>
     </article>
 
     <article class="stat-card">
-        <div class="stat-card__label">Trainer mode</div>
-        <div class="stat-card__value">Персональный фокус</div>
-        <div class="stat-card__hint">
-            Усиливает обучение за счёт адаптивного подбора изображений.
-        </div>
+        <div class="stat-card__label">Tests Completed</div>
+        <div class="stat-card__value">{{ tests_completed }}</div>
+        <div class="stat-card__hint">All finished sessions</div>
     </article>
 
     <article class="stat-card">
-        <div class="stat-card__label">Цель системы</div>
-        <div class="stat-card__value">Уверенное распознавание</div>
-        <div class="stat-card__hint">
-            Формирование устойчивого навыка идентификации клеток по изображению.
-        </div>
+        <div class="stat-card__label">Study Streak</div>
+        <div class="stat-card__value">{{ study_streak_days }} days</div>
+        <div class="stat-card__hint">Keep it up!</div>
     </article>
+</section>
+
+<section class="grid-2">
+    <div class="card" style="padding: 24px;">
+        <h2 style="margin: 0 0 20px; font-size: 28px; font-weight: 800;">Recent Tests</h2>
+
+        <div style="display: grid; gap: 16px;">
+            {% for session in recent_sessions %}
+                <div class="stat-card">
+                    <div style="display: flex; justify-content: space-between; align-items: start; gap: 16px;">
+                        <div>
+                            <div style="font-size: 22px; font-weight: 700;">
+                                {% if session.mode == "random" %}
+                                    Random Test
+                                {% elif session.mode == "trainer" %}
+                                    Adaptive Test
+                                {% else %}
+                                    {{ session.level.title }}
+                                {% endif %}
+                            </div>
+                            <div class="stat-card__hint" style="margin-top: 8px;">
+                                {{ session.started_at|date:"Y-m-d" }}
+                            </div>
+                        </div>
+
+                        <div style="text-align: right;">
+                            <div style="font-size: 24px; font-weight: 800;">
+                                {% widthratio session.correct_answers session.total_questions 100 %}%
+                            </div>
+                            <div class="stat-card__hint">
+                                {{ session.correct_answers }}/{{ session.total_questions }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="stat-card">
+                    <div class="stat-card__hint">No completed tests yet.</div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="card" style="padding: 24px;">
+        <h2 style="margin: 0 0 20px; font-size: 28px; font-weight: 800;">Learning Progress</h2>
+
+        <div style="display: grid; gap: 18px;">
+            <div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span class="section-text">Mastered Cells</span>
+                    <strong>{{ mastered_count }}</strong>
+                </div>
+                <div class="progress"><div class="progress__bar" style="width: {% if mastered_count %}100{% else %}0{% endif %}%;"></div></div>
+            </div>
+
+            <div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span class="section-text">In Progress</span>
+                    <strong>{{ in_progress_count }}</strong>
+                </div>
+                <div class="progress"><div class="progress__bar" style="width: {% if in_progress_count %}100{% else %}0{% endif %}%;"></div></div>
+            </div>
+
+            <div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span class="section-text">Needs Revision</span>
+                    <strong>{{ revision_count }}</strong>
+                </div>
+                <div class="progress"><div class="progress__bar" style="width: {% if revision_count %}100{% else %}0{% endif %}%;"></div></div>
+            </div>
+
+            <div class="section-text" style="margin-top: 8px;">
+                Focus on reviewing cells marked for revision to improve your accuracy.
+            </div>
+
+            <a href="{% url 'start_test' 'trainer' %}" class="btn btn--secondary btn--full">
+                Review Weak Areas
+            </a>
+        </div>
+    </div>
 </section>
 {% endblock %}
