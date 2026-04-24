@@ -169,9 +169,6 @@ def test_question_partial(request, session_id):
             session.finished_at = timezone.now()
             session.save(update_fields=["status", "finished_at"])
 
-            if session.mode == TestSession.Mode.LEVEL:
-                finalize_level_session(session)
-
         percent_result = (
             int((session.correct_answers / session.total_questions) * 100)
             if session.total_questions
@@ -232,6 +229,7 @@ def submit_answer_htmx(request, session_id):
     )
 
     current_item = session.session_images.filter(is_answered=False).first()
+
     if not current_item:
         percent_result = (
             int((session.correct_answers / session.total_questions) * 100)
@@ -261,6 +259,10 @@ def submit_answer_htmx(request, session_id):
     )
 
     session.refresh_from_db()
+
+    if session.status == TestSession.Status.COMPLETED and session.mode == TestSession.Mode.LEVEL:
+        finalize_level_session(session)
+        session.refresh_from_db()
 
     return render(
         request,

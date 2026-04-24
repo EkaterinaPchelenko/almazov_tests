@@ -15,26 +15,26 @@
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 10px;">
-            <span class="pill">Test completed</span>
-            <h1 class="section-title" style="font-size: 40px;">Results ready</h1>
+            <span class="pill">Тест завершён</span>
+            <h1 class="section-title" style="font-size: 40px;">Результаты готовы</h1>
             <p class="section-text" style="max-width: 560px;">
-                Your session is complete. Review your result below.
+                Ваша сессия завершена. Просмотрите результат ниже.
             </p>
         </div>
 
         <div class="grid-3" style="width: 100%;">
             <div class="stat-card">
-                <div class="stat-card__label">Correct answers</div>
+                <div class="stat-card__label">Правильные ответы</div>
                 <div class="stat-card__value">{{ score }} / {{ total }}</div>
             </div>
 
             <div class="stat-card">
-                <div class="stat-card__label">Percent</div>
+                <div class="stat-card__label">Процент</div>
                 <div class="stat-card__value">{{ percent }}%</div>
             </div>
 
             <div class="stat-card">
-                <div class="stat-card__label">Mode</div>
+                <div class="stat-card__label">Режим</div>
                 <div class="stat-card__value">
                     {% if session.mode == "trainer" %}
                         Trainer
@@ -52,23 +52,40 @@
                 <div class="progress__bar" style="width: {{ percent }}%;"></div>
             </div>
         </div>
+        {% if session.mode == "level" and session.level %}
+            <div class="stat-card">
+                <div class="stat-card__label">Порог прохождения</div>
+                <div class="stat-card__value">{{ session.level.passing_percent }}%</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card__label">Статус попытки</div>
+                <div class="stat-card__value">
+                    {% if percent >= session.level.passing_percent %}
+                        Пройдено
+                    {% else %}
+                        Не пройдено
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
 
         <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
             <a href="{% url 'dashboard' %}" class="btn btn--secondary">
-                Dashboard
+                Профиль
             </a>
 
             {% if session.mode == "trainer" %}
                 <a href="{% url 'start_test' 'trainer' %}" class="btn btn--primary">
-                    Retry trainer
+                    Попробовать снова
                 </a>
             {% elif session.mode == "level" and session.level %}
                 <a href="{% url 'levels_page' %}" class="btn btn--primary">
-                    Back to levels
+                    Вернуться к уровням
                 </a>
             {% else %}
                 <a href="{% url 'start_test' 'random' %}" class="btn btn--primary">
-                    Retry random test
+                    Попробовать снова
                 </a>
             {% endif %}
         </div>

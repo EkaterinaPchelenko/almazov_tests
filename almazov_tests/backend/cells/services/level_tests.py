@@ -146,14 +146,35 @@ def finalize_level_session(session):
     if session.mode != TestSession.Mode.LEVEL or not session.level:
         return None
 
+    session = (
+        TestSession.objects
+        .select_for_update()
+        .select_related("level", "user")
+        .get(id=session.id)
+    )
+
+    if session.level_completion_recorded:
+        return None
+
     progress = get_or_create_level_progress(session.user, session.level)
 
-    progress.completions_count += 1
+    percent = (
+        int((session.correct_answers / session.total_questions) * 100)
+        if session.total_questions
+        else 0
+    )
+
     progress.last_score = session.correct_answers
     progress.best_score = max(progress.best_score, session.correct_answers)
 
-    if progress.is_completed and progress.completed_at is None:
-        progress.completed_at = timezone.now()
+    if percent >= session.level.passing_percent:
+        progress.completions_count += 1
+
+        if progress.is_completed and progress.completed_at is None:
+            progress.completed_at = timezone.now()
+
+        if progress.is_completed:
+            unlock_next_level_for_user(session.user, session.level)
 
     progress.save(
         update_fields=[
@@ -164,8 +185,8 @@ def finalize_level_session(session):
         ]
     )
 
-    if progress.is_completed:
-        unlock_next_level_for_user(session.user, session.level)
+    session.level_completion_recorded = True
+    session.save(update_fields=["level_completion_recorded"])
 
     return progress
 

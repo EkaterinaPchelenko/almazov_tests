@@ -317,9 +317,11 @@
           <div class="meta-item">
             <strong>Режим:</strong>
             {% if session.mode == "trainer" %}
-              adaptive trainer
+                adaptive trainer
+            {% elif session.mode == "level" %}
+                level test
             {% else %}
-              random test
+                random test
             {% endif %}
           </div>
 

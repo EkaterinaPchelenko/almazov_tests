@@ -91,7 +91,7 @@
             <div style="margin-top: 18px; display: flex; gap: 12px; flex-wrap: wrap;">
                 {% if item.is_unlocked %}
                     <a href="{% url 'start_level_test' item.level.id %}" class="btn btn--primary">
-                        {% if item.is_completed %}Практикуйтесь ещё{% else %}Начать тест{% endif %}
+                        {% if item.is_completed %}Практиковаться ещё{% else %}Начать тест{% endif %}
                     </a>
                 {% else %}
                     <button class="btn btn--secondary" disabled>

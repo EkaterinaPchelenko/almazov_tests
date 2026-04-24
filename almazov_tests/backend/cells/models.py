@@ -40,6 +40,7 @@ class Level(models.Model):
         default=Badge.BEGINNER,
     )
     required_completions = models.PositiveIntegerField(default=5)
+    passing_percent = models.PositiveSmallIntegerField(default=70)
     question_count = models.PositiveIntegerField(default=10)
     is_active = models.BooleanField(default=True)
 
@@ -145,6 +146,7 @@ class TestSession(models.Model):
         related_name="sessions",
     )
     level_attempt_number = models.PositiveSmallIntegerField(null=True, blank=True)
+    level_completion_recorded = models.BooleanField(default=False)
     started_at = models.DateTimeField(auto_now_add=True)
     finished_at = models.DateTimeField(null=True, blank=True)
     total_questions = models.PositiveIntegerField(default=0)
