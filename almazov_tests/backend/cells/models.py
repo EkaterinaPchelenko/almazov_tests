@@ -25,6 +25,11 @@ class CellImage(models.Model):
 
 
 class Level(models.Model):
+    class QuestionType(models.TextChoices):
+        IMAGE_TO_NAME = "image_to_name", "Image → Name"
+        NAME_TO_IMAGE = "name_to_image", "Name → Image"
+        MATCHING = "matching", "Matching"
+
     class Badge(models.TextChoices):
         BEGINNER = "beginner", "Beginner"
         INTERMEDIATE = "intermediate", "Intermediate"
@@ -38,6 +43,11 @@ class Level(models.Model):
         max_length=30,
         choices=Badge.choices,
         default=Badge.BEGINNER,
+    )
+    question_type = models.CharField(
+        max_length=30,
+        choices=QuestionType.choices,
+        default=QuestionType.IMAGE_TO_NAME,
     )
     required_completions = models.PositiveIntegerField(default=5)
     passing_percent = models.PositiveSmallIntegerField(default=70)

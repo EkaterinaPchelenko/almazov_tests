@@ -22,7 +22,7 @@ class LevelCellInline(admin.TabularInline):
 
 @admin.register(Level)
 class LevelAdmin(admin.ModelAdmin):
-    list_display = ("order", "title", "badge", "required_completions", "question_count", "is_active")
+    list_display = ("order", "title", "question_type", "badge", "required_completions", "question_count", "is_active")
     list_filter = ("badge", "is_active")
     inlines = [LevelCellInline]
 

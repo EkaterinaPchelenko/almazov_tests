@@ -361,6 +361,34 @@
                 font-size: 24px;
             }
         }
+
+        .match-item {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .match-item.selected {
+            border-color: blue;
+            background: #eef;
+        }
+
+        .match-item.matched {
+            border-color: green;
+            background: #e8ffe8;
+        }
+
+        .match-item.correct {
+            background: #ecfdf3;
+            border: 1px solid #16a34a;
+        }
+
+        .match-item.wrong {
+            background: #fef2f2;
+            border: 1px solid #dc2626;
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>

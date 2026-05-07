@@ -1,126 +1,181 @@
-<section class="test-layout">
-    <div class="card image-panel">
-        <div class="panel-header">
-            <div>
-                <h1 class="question-title">Cell Identification Test</h1>
-                <p class="question-subtitle">
-                    Examine the cell structure carefully and identify the correct cell type.
-                </p>
-            </div>
+<div id="test-container">
 
-            <div class="question-index">
-                {{ order_number }} / {{ total }}
-            </div>
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 18px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
-                {% if session.mode == "trainer" %}
-                    <span class="mode-badge mode-badge--trainer">Adaptive trainer</span>
-                {% elif session.mode == "level" %}
-                    <span class="mode-badge mode-badge--random">Level mode</span>
-                {% else %}
-                    <span class="mode-badge mode-badge--random">Random test</span>
-                {% endif %}
-
-                <div style="font-size: 14px; color: var(--text-soft); font-weight: 600;">
-                    Progress: {{ percent }}%
-                </div>
-            </div>
-
-            <div class="progress">
-                <div class="progress__bar" style="width: {{ percent }}%;"></div>
-            </div>
-        </div>
-
-        <div class="image-frame">
-            {% if image.image %}
-                <img src="{{ image.image.url }}" alt="{{ image.cell.name }}">
-            {% else %}
-                <div style="text-align: center; color: var(--text-soft);">
-                    Изображение недоступно
-                </div>
-            {% endif %}
+    <!-- Progress -->
+    <div style="margin-bottom: 16px;">
+        <div class="progress">
+            <div class="progress__bar" style="width: {{ percent }}%;"></div>
         </div>
     </div>
 
-    <aside class="card answer-panel">
-        <div class="answer-stack">
-            <div>
-                <span class="pill">Question {{ order_number }}</span>
-            </div>
-
-            <div>
-                <h2 style="margin: 0 0 8px; font-size: 24px; font-weight: 800; letter-spacing: -0.03em;">
-                    Identify the cell type shown in the microscope image
-                </h2>
-                <p class="section-text" style="font-size: 14px;">
-                    Choose one correct answer from {{ choice_count }} options.
-                </p>
-            </div>
-
-            <form
-                id="answer-form"
-                hx-post="{% url 'submit_answer_htmx' session.id %}"
-                hx-target="#test-container"
-                hx-swap="innerHTML"
-                style="display: flex; flex-direction: column; gap: 14px;"
-            >
-                {% csrf_token %}
-                <input type="hidden" name="response_time_ms" id="response_time_ms">
-
-                {% for option in answer_options %}
-                    <label class="stat-card" style="cursor: pointer; display: flex; align-items: center; gap: 12px;">
-                        <input type="radio" name="answer" value="{{ option }}" required>
-                        <span style="font-size: 16px; font-weight: 600;">{{ option }}</span>
-                    </label>
-                {% endfor %}
-
-                <button type="submit" class="btn btn--primary btn--full">
-                    Submit Answer
-                </button>
-            </form>
-
-            <div class="meta-list">
-                <div class="meta-item">
-                    <span class="meta-item__label">Mode</span>
-                    <span class="meta-item__value">
-                        {% if session.mode == "trainer" %}
-                            Adaptive trainer
-                        {% elif session.mode == "level" %}
-                            Level test
-                        {% else %}
-                            Random test
-                        {% endif %}
-                    </span>
-                </div>
-
-                <div class="meta-item">
-                    <span class="meta-item__label">Question</span>
-                    <span class="meta-item__value">{{ order_number }} / {{ total }}</span>
-                </div>
-
-                {% if session.mode == "level" and session.level %}
-                    <div class="meta-item">
-                        <span class="meta-item__label">Level</span>
-                        <span class="meta-item__value">{{ session.level.title }}</span>
-                    </div>
-                {% endif %}
-            </div>
+    <!-- RESULT -->
+    {% if show_results %}
+        <div class="result-box">
+            Result: {{ correct }} / {{ total }} ({{ percent }}%)
         </div>
-    </aside>
-</section>
+    {% endif %}
 
+    <form
+        hx-post="{% url 'submit_answer_htmx' session.id %}"
+        hx-target="#test-container"
+        hx-swap="innerHTML"
+    >
+
+        {% csrf_token %}
+
+        <!-- ===================== -->
+        <!-- MATCHING QUESTION -->
+        <!-- ===================== -->
+        {% if question.type == "matching" %}
+
+            <div class="match-container {% if show_results %}results{% endif %}">
+
+                <!-- LEFT: CELLS -->
+                <div class="match-column">
+
+                    {% if show_results %}
+                        {% for p in pairs %}
+                            <div class="match-item {% if p.is_correct %}correct{% else %}wrong{% endif %}">
+                                {{ p.cell.name }}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        {% for p in question.pairs %}
+                            <div
+                                class="match-item"
+                                data-cell="{{ p.cell_id }}"
+                                onclick="selectCell(this)"
+                            >
+                                {{ p.cell_name }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                </div>
+
+                <!-- RIGHT: IMAGES -->
+                <div class="match-column">
+
+                    {% if show_results %}
+                        {% for p in pairs %}
+                            <div class="match-item {% if p.is_correct %}correct{% else %}wrong{% endif %}">
+                                <img src="{{ p.image.image.url }}" style="width:100%;">
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        {% for img in question.images %}
+                            <div
+                                class="match-item"
+                                data-image="{{ img.image_id }}"
+                                onclick="selectImage(this)"
+                            >
+                                <img src="{{ img.image_url }}" style="width:100%;">
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            <!-- hidden input -->
+            <input type="hidden" name="answer" id="matching-answer">
+
+            <!-- BUTTON -->
+            {% if not show_results %}
+                <button type="submit" class="btn btn--primary">
+                    Submit Matching
+                </button>
+            {% else %}
+                <button
+                    hx-get="{% url 'test_page' session.id %}"
+                    hx-target="#test-container"
+                    hx-swap="innerHTML"
+                    class="btn btn--primary"
+                >
+                    Next Question
+                </button>
+            {% endif %}
+
+        {% endif %}
+
+    </form>
+
+</div>
+
+<!-- ===================== -->
+<!-- STYLES -->
+<!-- ===================== -->
+<style>
+.match-container {
+    display: flex;
+    gap: 20px;
+}
+
+.match-column {
+    width: 50%;
+}
+
+.match-item {
+    padding: 10px;
+    border: 1px solid #ddd;
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+
+.match-container.results {
+    pointer-events: none;
+    opacity: 0.95;
+}
+
+/* ✅ RESULT COLORS */
+.match-item.correct {
+    background: #dcfce7;
+    border: 2px solid #22c55e;
+}
+
+.match-item.wrong {
+    background: #fee2e2;
+    border: 2px solid #ef4444;
+}
+
+.result-box {
+    margin-bottom: 12px;
+    font-weight: bold;
+}
+</style>
+
+<!-- ===================== -->
+<!-- JS (matching logic) -->
+<!-- ===================== -->
 <script>
-    (function () {
-        const startedAt = Date.now();
-        const form = document.getElementById("answer-form");
-        const responseField = document.getElementById("response_time_ms");
+let selectedCell = null;
+let pairs = {};
 
-        if (form && responseField) {
-            form.addEventListener("submit", function () {
-                responseField.value = Date.now() - startedAt;
-            });
-        }
-    })();
+function selectCell(el) {
+    if (document.querySelector('.match-container').classList.contains('results')) return;
+
+    selectedCell = el.dataset.cell;
+
+    document.querySelectorAll('[data-cell]').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+}
+
+function selectImage(el) {
+    if (document.querySelector('.match-container').classList.contains('results')) return;
+
+    if (!selectedCell) return;
+
+    const imageId = el.dataset.image;
+
+    pairs[selectedCell] = imageId;
+
+    el.classList.add('selected');
+}
+
+document.querySelector("form")?.addEventListener("submit", function() {
+    const input = document.getElementById("matching-answer");
+    if (input) {
+        input.value = JSON.stringify(pairs);
+    }
+});
 </script>

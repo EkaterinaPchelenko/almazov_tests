@@ -17,6 +17,7 @@ from .services.level_tests import (
 from .services.progress import save_answer
 from .services.random_test import generate_random_images
 from .services.trainer_test import generate_trainer_images
+from .services.question_builder import build_question
 
 TEST_LENGTH = 10
 DEFAULT_CHOICE_COUNT = 4
@@ -196,22 +197,42 @@ def test_question_partial(request, session_id):
         choice_count = get_choice_count_for_progress(progress)
         allowed_cell_ids = get_allowed_cell_ids_for_level(session.level)
 
-    answer_options = _build_answer_options(
+    # answer_options = _build_answer_options(
+    #     current_item=current_item,
+    #     choice_count=choice_count,
+    #     allowed_cell_ids=allowed_cell_ids,
+    # )
+
+    question = build_question(
         current_item=current_item,
+        session=session,
         choice_count=choice_count,
         allowed_cell_ids=allowed_cell_ids,
     )
+
+    # return render(
+    #     request,
+    #     "partials/test_question.html",
+    #     {
+    #         "session": session,
+    #         "image": current_item.image,
+    #         "order_number": current_item.order_number,
+    #         "total": session.total_questions,
+    #         "percent": percent,
+    #         "answer_options": answer_options,
+    #         "choice_count": choice_count,
+    #     },
+    # )
 
     return render(
         request,
         "partials/test_question.html",
         {
             "session": session,
-            "image": current_item.image,
+            "question": question,
             "order_number": current_item.order_number,
             "total": session.total_questions,
             "percent": percent,
-            "answer_options": answer_options,
             "choice_count": choice_count,
         },
     )
@@ -263,6 +284,7 @@ def submit_answer_htmx(request, session_id):
     if session.status == TestSession.Status.COMPLETED and session.mode == TestSession.Mode.LEVEL:
         finalize_level_session(session)
         session.refresh_from_db()
+
 
     return render(
         request,
