@@ -517,6 +517,15 @@ def submit_answer_htmx(request, session_id):
         response_time_ms=response_time_ms,
     )
 
+    selected_image = None
+
+    if (
+            session.mode == TestSession.Mode.LEVEL
+            and session.level
+            and session.level.question_type == Level.QuestionType.NAME_TO_IMAGE
+    ):
+        selected_image = CellImage.objects.filter(id=user_answer).first()
+
     session.refresh_from_db()
 
     if (
@@ -532,5 +541,6 @@ def submit_answer_htmx(request, session_id):
         {
             "session": session,
             "answer": answer,
+            "selected_image": selected_image,
         },
     )

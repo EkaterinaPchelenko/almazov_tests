@@ -107,7 +107,7 @@
 
       {% if question.type == "image_to_name" %}
         <div class="question-image">
-          <img src="{{ question.image_url }}" alt="">
+          <img src="{{ question.image.image.url }}" alt="">
         </div>
 
         <div class="answer-options">
@@ -134,10 +134,10 @@
             <button
               type="submit"
               name="answer"
-              value="{{ option.image_id }}"
+              value="{{ option.id }}"
               class="image-option"
             >
-              <img src="{{ option.image_url }}" alt="">
+              <img src="{{ option.image.url }}" alt="">
             </button>
           {% endfor %}
         </div>
