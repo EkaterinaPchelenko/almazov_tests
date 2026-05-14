@@ -1,0 +1,125 @@
+<div id="diagnostic-case-container">
+  <div class="case-result-card">
+    {% if session.counts_are_correct %}
+      <h2 class="case-result-title success">Кейс пройден</h2>
+      <p>
+        Количественный подсчёт совпал с эталоном.
+      </p>
+    {% else %}
+      <h2 class="case-result-title error">Кейс не пройден</h2>
+      <p>
+        Количественный подсчёт не совпал с эталоном.
+        При следующей попытке откроется этот же кейс.
+      </p>
+    {% endif %}
+
+    <div class="case-diagnosis-box">
+      <p><strong>Ваш диагноз:</strong> {{ session.selected_diagnosis }}</p>
+      <p><strong>Правильный диагноз:</strong> {{ session.case.diagnosis }}</p>
+
+      {% if session.diagnosis_is_correct %}
+        <p class="success">Диагноз выбран верно.</p>
+      {% else %}
+        <p class="error">Диагноз выбран неверно.</p>
+      {% endif %}
+    </div>
+
+    <h3>Сравнение количеств</h3>
+
+    <table class="case-counts-table">
+      <thead>
+        <tr>
+          <th>Клетка</th>
+          <th>Ваш подсчёт</th>
+          <th>Эталон</th>
+          <th>Статус</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for item in comparison %}
+          <tr class="{% if item.is_correct %}row-success{% else %}row-error{% endif %}">
+            <td>{{ item.cell_name }}</td>
+            <td>{{ item.student_count }}</td>
+            <td>{{ item.expected_count }}</td>
+            <td>
+              {% if item.is_correct %}
+                Верно
+              {% else %}
+                Неверно
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <a href="{% url 'levels_page' %}" class="btn btn--secondary">
+      Вернуться к уровням
+    </a>
+
+    {% if not session.counts_are_correct %}
+      <a href="{% url 'start_diagnostic_case_level' %}" class="btn btn--primary">
+        Повторить кейс
+      </a>
+    {% else %}
+      <a href="{% url 'start_diagnostic_case_level' %}" class="btn btn--primary">
+        Следующий кейс
+      </a>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  .case-result-card {
+    padding: 26px;
+    border-radius: 22px;
+    background: #ffffff;
+    border: 1px solid #dbe4ef;
+  }
+
+  .case-result-title {
+    margin-top: 0;
+  }
+
+  .success {
+    color: #16a34a;
+  }
+
+  .error {
+    color: #dc2626;
+  }
+
+  .case-diagnosis-box {
+    margin: 20px 0;
+    padding: 18px;
+    border-radius: 16px;
+    background: #f8fafc;
+    border: 1px solid #dbe4ef;
+  }
+
+  .case-counts-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0 24px;
+  }
+
+  .case-counts-table th,
+  .case-counts-table td {
+    padding: 12px 14px;
+    border: 1px solid #dbe4ef;
+    text-align: left;
+  }
+
+  .case-counts-table th {
+    background: #f8fafc;
+  }
+
+  .row-success {
+    background: #ecfdf5;
+  }
+
+  .row-error {
+    background: #fef2f2;
+  }
+</style>

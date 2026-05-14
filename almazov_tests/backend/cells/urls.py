@@ -11,4 +11,29 @@ urlpatterns = [
     path("test/<int:session_id>/", views.test_page, name="test_page"),
     path("test/<int:session_id>/question/", views.test_question_partial, name="test_question_partial"),
     path("test/<int:session_id>/submit/", views.submit_answer_htmx, name="submit_answer_htmx"),
+    path(
+        "diagnostic-level/start/",
+        views.start_diagnostic_case_level,
+        name="start_diagnostic_case_level",
+    ),
+    path(
+        "diagnostic-level/<int:session_id>/",
+        views.diagnostic_case_page,
+        name="diagnostic_case_page",
+    ),
+    path(
+        "diagnostic-level/<int:session_id>/batch/",
+        views.diagnostic_case_batch_partial,
+        name="diagnostic_case_batch_partial",
+    ),
+    path(
+        "diagnostic-level/<int:session_id>/submit-batch/",
+        views.submit_diagnostic_case_batch,
+        name="submit_diagnostic_case_batch",
+    ),
+    path(
+        "diagnostic-level/<int:session_id>/submit-diagnosis/",
+        views.submit_diagnostic_case_diagnosis,
+        name="submit_diagnostic_case_diagnosis",
+    ),
 ]

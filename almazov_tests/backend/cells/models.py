@@ -289,3 +289,157 @@ class GlobalImageStats(models.Model):
     )
     total_attempts = models.PositiveIntegerField(default=0)
     total_correct = models.PositiveIntegerField(default=0)
+
+
+class DiagnosticCase(models.Model):
+    title = models.CharField(max_length=255)
+    diagnosis = models.CharField(max_length=255)
+    note = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["id"]
+
+    def __str__(self):
+        return self.title
+
+
+class DiagnosticCaseExpectedCount(models.Model):
+    case = models.ForeignKey(
+        DiagnosticCase,
+        on_delete=models.CASCADE,
+        related_name="expected_counts",
+    )
+    cell = models.ForeignKey(
+        Cell,
+        on_delete=models.CASCADE,
+        related_name="diagnostic_expected_counts",
+    )
+    count = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["case", "cell"],
+                name="uq_diagnostic_case_expected_cell",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.case} — {self.cell}: {self.count}"
+
+
+class DiagnosticCaseImage(models.Model):
+    case = models.ForeignKey(
+        DiagnosticCase,
+        on_delete=models.CASCADE,
+        related_name="case_images",
+    )
+    image = models.ImageField(upload_to="diagnostic_cases/")
+    order_number = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        ordering = ["order_number"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["case", "order_number"],
+                name="uq_diagnostic_case_image_order",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.case} — image #{self.order_number}"
+
+
+class DiagnosticCaseProgress(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    case = models.ForeignKey(
+        DiagnosticCase,
+        on_delete=models.CASCADE,
+        related_name="user_progress",
+    )
+
+    is_completed = models.BooleanField(default=False)
+    attempts_count = models.PositiveIntegerField(default=0)
+
+    last_attempt_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "case"],
+                name="uq_user_diagnostic_case_progress",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.user} — {self.case} — completed={self.is_completed}"
+
+
+class DiagnosticCaseSession(models.Model):
+    class Status(models.TextChoices):
+        IN_PROGRESS = "in_progress", "In progress"
+        AWAITING_DIAGNOSIS = "awaiting_diagnosis", "Awaiting diagnosis"
+        COMPLETED = "completed", "Completed"
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    case = models.ForeignKey(
+        DiagnosticCase,
+        on_delete=models.CASCADE,
+        related_name="sessions",
+    )
+
+    status = models.CharField(
+        max_length=30,
+        choices=Status.choices,
+        default=Status.IN_PROGRESS,
+    )
+
+    current_offset = models.PositiveIntegerField(default=0)
+    batch_size = models.PositiveIntegerField(default=5)
+
+    counts_are_correct = models.BooleanField(default=False)
+    diagnosis_is_correct = models.BooleanField(default=False)
+
+    selected_diagnosis = models.CharField(max_length=255, blank=True)
+
+    started_at = models.DateTimeField(auto_now_add=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-started_at"]
+
+    def __str__(self):
+        return f"{self.user} — {self.case} — {self.status}"
+
+
+class DiagnosticCaseImageAnswer(models.Model):
+    session = models.ForeignKey(
+        DiagnosticCaseSession,
+        on_delete=models.CASCADE,
+        related_name="image_answers",
+    )
+    case_image = models.ForeignKey(
+        DiagnosticCaseImage,
+        on_delete=models.CASCADE,
+        related_name="answers",
+    )
+    selected_cell = models.ForeignKey(
+        Cell,
+        on_delete=models.CASCADE,
+        related_name="diagnostic_selected_answers",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["session", "case_image"],
+                name="uq_diagnostic_session_image_answer",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.session} — {self.case_image} → {self.selected_cell}"

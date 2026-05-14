@@ -13,6 +13,7 @@ from .models import (
     TestSession,
     UserImageAnswer,
     UserImagePerformance,
+    DiagnosticCaseSession,
 )
 from .services.level_tests import (
     build_level_overview,
@@ -22,6 +23,15 @@ from .services.level_tests import (
     get_allowed_cell_ids_for_level,
     get_choice_count_for_progress,
     get_or_create_level_progress,
+)
+from .services.diagnostic_cases import (
+    build_counts_comparison,
+    create_diagnostic_case_session,
+    finish_diagnostic_case_session,
+    get_all_cell_options,
+    get_available_diagnoses,
+    get_current_case_batch,
+    save_case_batch_answers,
 )
 from .services.progress import save_answer
 from .services.question_builder import build_question
@@ -542,5 +552,137 @@ def submit_answer_htmx(request, session_id):
             "session": session,
             "answer": answer,
             "selected_image": selected_image,
+        },
+    )
+
+@login_required
+def start_diagnostic_case_level(request):
+    session = create_diagnostic_case_session(request.user)
+
+    if session is None:
+        return render(
+            request,
+            "diagnostic_cases/all_completed.html",
+            {},
+        )
+
+    return redirect("diagnostic_case_page", session_id=session.id)
+
+
+@login_required
+def diagnostic_case_page(request, session_id):
+    session = get_object_or_404(
+        DiagnosticCaseSession.objects.select_related("case"),
+        id=session_id,
+        user=request.user,
+    )
+
+    return render(
+        request,
+        "diagnostic_cases/case_page.html",
+        {
+            "session": session,
+        },
+    )
+
+
+@login_required
+def diagnostic_case_batch_partial(request, session_id):
+    session = get_object_or_404(
+        DiagnosticCaseSession.objects.select_related("case"),
+        id=session_id,
+        user=request.user,
+    )
+
+    if session.status == DiagnosticCaseSession.Status.AWAITING_DIAGNOSIS:
+        return render(
+            request,
+            "diagnostic_cases/partials/case_counts.html",
+            {
+                "session": session,
+                "comparison": build_counts_comparison(session),
+                "diagnoses": get_available_diagnoses(),
+            },
+        )
+
+    if session.status == DiagnosticCaseSession.Status.COMPLETED:
+        return render(
+            request,
+            "diagnostic_cases/partials/case_result.html",
+            {
+                "session": session,
+                "comparison": build_counts_comparison(session),
+            },
+        )
+
+    batch_images = get_current_case_batch(session)
+    cell_options = get_all_cell_options()
+
+    total_images = session.case.case_images.count()
+    progress_percent = int((session.current_offset / total_images) * 100) if total_images else 0
+
+    return render(
+        request,
+        "diagnostic_cases/partials/case_batch.html",
+        {
+            "session": session,
+            "batch_images": batch_images,
+            "cell_options": cell_options,
+            "progress_percent": progress_percent,
+            "from_number": session.current_offset + 1,
+            "to_number": min(session.current_offset + session.batch_size, total_images),
+            "total_images": total_images,
+        },
+    )
+
+
+@login_required
+def submit_diagnostic_case_batch(request, session_id):
+    if request.method != "POST":
+        return redirect("diagnostic_case_page", session_id=session_id)
+
+    session = get_object_or_404(
+        DiagnosticCaseSession.objects.select_related("case"),
+        id=session_id,
+        user=request.user,
+    )
+
+    raw_answer = request.POST.get("answer", "{}")
+    session = save_case_batch_answers(session, raw_answer)
+
+    if session.status == DiagnosticCaseSession.Status.AWAITING_DIAGNOSIS:
+        return render(
+            request,
+            "diagnostic_cases/partials/case_counts.html",
+            {
+                "session": session,
+                "comparison": build_counts_comparison(session),
+                "diagnoses": get_available_diagnoses(),
+            },
+        )
+
+    return diagnostic_case_batch_partial(request, session.id)
+
+
+@login_required
+def submit_diagnostic_case_diagnosis(request, session_id):
+    if request.method != "POST":
+        return redirect("diagnostic_case_page", session_id=session_id)
+
+    session = get_object_or_404(
+        DiagnosticCaseSession.objects.select_related("case"),
+        id=session_id,
+        user=request.user,
+    )
+
+    selected_diagnosis = request.POST.get("diagnosis", "")
+    session = finish_diagnostic_case_session(session, selected_diagnosis)
+
+    return render(
+        request,
+        "diagnostic_cases/partials/case_result.html",
+        {
+            "session": session,
+            "comparison": build_counts_comparison(session),
         },
     )

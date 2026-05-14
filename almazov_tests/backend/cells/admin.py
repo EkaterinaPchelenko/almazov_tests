@@ -3,6 +3,12 @@ from django.contrib import admin
 from .models import (
     Cell,
     CellImage,
+    DiagnosticCase,
+    DiagnosticCaseExpectedCount,
+    DiagnosticCaseImage,
+    DiagnosticCaseImageAnswer,
+    DiagnosticCaseProgress,
+    DiagnosticCaseSession,
     GlobalImageStats,
     ImageSimilarity,
     Level,
@@ -22,7 +28,15 @@ class LevelCellInline(admin.TabularInline):
 
 @admin.register(Level)
 class LevelAdmin(admin.ModelAdmin):
-    list_display = ("order", "title", "question_type", "badge", "required_completions", "question_count", "is_active")
+    list_display = (
+        "order",
+        "title",
+        "question_type",
+        "badge",
+        "required_completions",
+        "question_count",
+        "is_active",
+    )
     list_filter = ("badge", "is_active")
     inlines = [LevelCellInline]
 
@@ -33,7 +47,69 @@ class UserLevelProgressAdmin(admin.ModelAdmin):
     list_filter = ("is_unlocked", "level")
 
 
-admin.site.register(Cell)
+class DiagnosticCaseExpectedCountInline(admin.TabularInline):
+    model = DiagnosticCaseExpectedCount
+    extra = 1
+    autocomplete_fields = ("cell",)
+
+
+class DiagnosticCaseImageInline(admin.TabularInline):
+    model = DiagnosticCaseImage
+    extra = 1
+
+
+@admin.register(DiagnosticCase)
+class DiagnosticCaseAdmin(admin.ModelAdmin):
+    list_display = ("id", "title", "diagnosis", "is_active")
+    list_filter = ("diagnosis", "is_active")
+    search_fields = ("title", "diagnosis", "note")
+    inlines = [
+        DiagnosticCaseExpectedCountInline,
+        DiagnosticCaseImageInline,
+    ]
+
+
+@admin.register(DiagnosticCaseProgress)
+class DiagnosticCaseProgressAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "case",
+        "is_completed",
+        "attempts_count",
+        "last_attempt_at",
+        "completed_at",
+    )
+    list_filter = ("is_completed", "case")
+
+
+@admin.register(DiagnosticCaseSession)
+class DiagnosticCaseSessionAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "case",
+        "status",
+        "current_offset",
+        "counts_are_correct",
+        "diagnosis_is_correct",
+        "selected_diagnosis",
+        "started_at",
+        "finished_at",
+    )
+    list_filter = ("status", "counts_are_correct", "diagnosis_is_correct", "case")
+
+
+@admin.register(DiagnosticCaseImageAnswer)
+class DiagnosticCaseImageAnswerAdmin(admin.ModelAdmin):
+    list_display = ("session", "case_image", "selected_cell", "created_at")
+    list_filter = ("selected_cell",)
+    autocomplete_fields = ("selected_cell",)
+
+
+@admin.register(Cell)
+class CellAdmin(admin.ModelAdmin):
+    search_fields = ("name",)
+
+
 admin.site.register(LevelCell)
 admin.site.register(CellImage)
 admin.site.register(TestSession)

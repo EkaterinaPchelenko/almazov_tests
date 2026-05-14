@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="case-page">
+  <h1>Диагностический кейс</h1>
+
+  <p class="case-subtitle">
+    Сопоставьте изображения клеток с их названиями. После подсчёта выберите диагноз.
+  </p>
+
+  <div
+    id="diagnostic-case-container"
+    hx-get="{% url 'diagnostic_case_batch_partial' session.id %}"
+    hx-trigger="load"
+    hx-swap="innerHTML"
+  >
+    Загрузка кейса...
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="case-result-card">
+    <h1>Все диагностические кейсы пройдены</h1>
+    <p>Вы завершили все доступные кейсы этого уровня.</p>
+
+    <a href="{% url 'levels_page' %}" class="btn btn--primary">
+      Вернуться к уровням
+    </a>
+  </div>
+{% endblock %}

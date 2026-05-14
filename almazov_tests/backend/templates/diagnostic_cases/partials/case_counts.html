@@ -1,0 +1,88 @@
+<div id="diagnostic-case-container">
+  <h2>Предварительные количественные результаты</h2>
+
+  <p>
+    Ниже показано, сколько клеток каждого типа насчитал студент.
+    Теперь выберите диагноз.
+  </p>
+
+  <table class="case-counts-table">
+    <thead>
+      <tr>
+        <th>Клетка</th>
+        <th>Ваш подсчёт</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for item in comparison %}
+        {% if item.student_count > 0 %}
+          <tr>
+            <td>{{ item.cell_name }}</td>
+            <td>{{ item.student_count }}</td>
+          </tr>
+        {% endif %}
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <form
+    hx-post="{% url 'submit_diagnostic_case_diagnosis' session.id %}"
+    hx-target="#diagnostic-case-container"
+    hx-swap="outerHTML"
+  >
+    {% csrf_token %}
+
+    <label class="diagnosis-label" for="diagnosis">
+      Выберите диагноз
+    </label>
+
+    <select id="diagnosis" name="diagnosis" required class="diagnosis-select">
+      <option value="">Выберите диагноз</option>
+
+      {% for diagnosis in diagnoses %}
+        <option value="{{ diagnosis }}">{{ diagnosis }}</option>
+      {% endfor %}
+    </select>
+
+    <button type="submit" class="btn btn--primary">
+      Подтвердить диагноз
+    </button>
+  </form>
+</div>
+
+<style>
+  .case-counts-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0 24px;
+    background: #ffffff;
+  }
+
+  .case-counts-table th,
+  .case-counts-table td {
+    padding: 12px 14px;
+    border: 1px solid #dbe4ef;
+    text-align: left;
+  }
+
+  .case-counts-table th {
+    background: #f8fafc;
+  }
+
+  .diagnosis-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+
+  .diagnosis-select {
+    display: block;
+    width: 100%;
+    max-width: 420px;
+    margin-bottom: 18px;
+    padding: 12px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+  }
+</style>
