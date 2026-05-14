@@ -113,6 +113,61 @@
             <div class="section-text">Levels are not configured yet.</div>
         </div>
     {% endfor %}
+
+    <article class="card" style="padding: 24px;">
+        <div style="display: flex; justify-content: space-between; gap: 20px; align-items: start; flex-wrap: wrap;">
+            <div style="display: flex; gap: 18px; align-items: start;">
+                <div style="
+                    width: 62px;
+                    height: 62px;
+                    border-radius: 50%;
+                    display: grid;
+                    place-items: center;
+                    font-weight: 800;
+                    font-size: 22px;
+                    color: white;
+                    background: #2f6df6;
+                ">
+                    D
+                </div>
+
+                <div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                        <div style="font-size: 28px; font-weight: 800;">
+                            Диагностический уровень
+                        </div>
+                        <span class="pill">Case-based</span>
+                    </div>
+
+                    <div class="section-text" style="margin-top: 8px;">
+                        Подсчитайте клетки в клиническом кейсе, получите количественные результаты
+                        и выберите предполагаемый диагноз.
+                    </div>
+
+                    <div class="section-text" style="margin-top: 14px;">
+                        Формат: 1 прохождение = 1 кейс, изображения показываются группами по 5.
+                    </div>
+                </div>
+            </div>
+
+            <div style="font-size: 18px; font-weight: 700;">
+                30 кейсов
+            </div>
+        </div>
+
+        <div class="progress" style="margin-top: 14px;">
+            <div class="progress__bar" style="width: 0%;"></div>
+        </div>
+
+        <div style="margin-top: 18px; display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="{% url 'start_diagnostic_case_level' %}" class="btn btn--primary">
+                Начать диагностический кейс
+            </a>
+
+            <span class="pill">Подсчёт клеток</span>
+            <span class="pill">Диагноз</span>
+        </div>
+    </article>
 </section>
 
 <section class="card" style="padding: 24px; margin-top: 24px; background: #eef4ff;">
