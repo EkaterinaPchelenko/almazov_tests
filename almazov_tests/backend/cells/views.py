@@ -647,8 +647,34 @@ def submit_diagnostic_case_batch(request, session_id):
         user=request.user,
     )
 
-    raw_answer = request.POST.get("answer", "{}")
-    session = save_case_batch_answers(session, raw_answer)
+    raw_answer = {
+        key.replace("cell_", ""): value
+        for key, value in request.POST.items()
+        if key.startswith("cell_")
+    }
+
+    session, error_message = save_case_batch_answers(session, raw_answer)
+
+    if error_message:
+        batch_images = get_current_case_batch(session)
+        cell_options = get_all_cell_options()
+        total_images = session.case.case_images.count()
+        progress_percent = int((session.current_offset / total_images) * 100) if total_images else 0
+
+        return render(
+            request,
+            "diagnostic_cases/partials/case_batch.html",
+            {
+                "session": session,
+                "batch_images": batch_images,
+                "cell_options": cell_options,
+                "progress_percent": progress_percent,
+                "from_number": session.current_offset + 1,
+                "to_number": min(session.current_offset + session.batch_size, total_images),
+                "total_images": total_images,
+                "error_message": error_message,
+            },
+        )
 
     if session.status == DiagnosticCaseSession.Status.AWAITING_DIAGNOSIS:
         return render(

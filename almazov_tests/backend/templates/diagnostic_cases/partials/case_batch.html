@@ -1,122 +1,73 @@
-<div id="diagnostic-case-container">
-  <div class="case-progress">
-    <div class="case-progress__text">
-      Изображения {{ from_number }}–{{ to_number }} из {{ total_images }}
-    </div>
-
-    <div class="case-progress__bar">
-      <div class="case-progress__fill" style="width: {{ progress_percent }}%;"></div>
-    </div>
-  </div>
-
-  <form
-    id="case-batch-form"
-    hx-post="{% url 'submit_diagnostic_case_batch' session.id %}"
-    hx-target="#diagnostic-case-container"
-    hx-swap="outerHTML"
-  >
-    {% csrf_token %}
-
-    <div class="case-batch-grid">
-      {% for image in batch_images %}
-        <div class="case-image-card">
-          <img src="{{ image.image.url }}" alt="Клетка {{ image.order_number }}">
-
-          <select
-            class="case-cell-select"
-            data-case-image-id="{{ image.id }}"
-            required
-          >
-            <option value="">Выберите клетку</option>
-
-            {% for cell in cell_options %}
-              <option value="{{ cell.id }}">{{ cell.name }}</option>
-            {% endfor %}
-          </select>
+<div class="card card--soft" style="padding: 28px;">
+    <div style="display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 18px;">
+        <div>
+            <h2 class="section-title" style="font-size: 26px; margin-bottom: 6px;">
+                Диагностический кейс
+            </h2>
+            <p class="section-text">
+                Изображения {{ from_number }}–{{ to_number }} из {{ total_images }}
+            </p>
         </div>
-      {% endfor %}
+
+        <div style="min-width: 180px;">
+            <div style="font-size: 13px; opacity: .75; margin-bottom: 6px;">
+                Прогресс: {{ progress_percent }}%
+            </div>
+            <div style="height: 10px; border-radius: 999px; background: rgba(255,255,255,.12); overflow: hidden;">
+                <div style="height: 100%; width: {{ progress_percent }}%; border-radius: 999px; background: #58cc02;"></div>
+            </div>
+        </div>
     </div>
 
-    <input type="hidden" name="answer" id="case-batch-answer">
+    {% if error_message %}
+        <div class="card" style="padding: 14px 16px; margin-bottom: 18px; border: 1px solid rgba(255, 90, 90, .45); background: rgba(255, 90, 90, .08);">
+            <strong>Проверь ответы:</strong> {{ error_message }}
+        </div>
+    {% endif %}
 
-    <button type="submit" class="btn btn--primary">
-      Подтвердить 5 изображений
-    </button>
-  </form>
+    <form
+        hx-post="{% url 'submit_diagnostic_case_batch' session.id %}"
+        hx-target="#diagnostic-case-content"
+        hx-swap="innerHTML"
+    >
+        {% csrf_token %}
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px;">
+            {% for image in batch_images %}
+                <div class="card" style="padding: 16px;">
+                    <div style="aspect-ratio: 1 / 1; border-radius: 18px; overflow: hidden; background: rgba(255,255,255,.06); margin-bottom: 14px;">
+                        <img
+                            src="{{ image.image.url }}"
+                            alt="Diagnostic case image {{ image.order_number }}"
+                            style="width: 100%; height: 100%; object-fit: cover;"
+                        >
+                    </div>
+
+                    <label for="cell-{{ image.id }}" style="display: block; font-weight: 700; margin-bottom: 8px;">
+                        Выберите тип клетки
+                    </label>
+
+                    <select
+                        id="cell-{{ image.id }}"
+                        name="cell_{{ image.id }}"
+                        required
+                        style="width: 100%; padding: 12px 14px; border-radius: 14px;"
+                    >
+                        <option value="">Выберите клетку</option>
+                        {% for cell in cell_options %}
+                            <option value="{{ cell.id }}">
+                                {{ cell.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; margin-top: 22px;">
+            <button type="submit" class="btn btn-primary">
+                Подтвердить блок
+            </button>
+        </div>
+    </form>
 </div>
-
-<style>
-  .case-progress {
-    margin-bottom: 24px;
-  }
-
-  .case-progress__text {
-    margin-bottom: 8px;
-    font-weight: 700;
-  }
-
-  .case-progress__bar {
-    height: 10px;
-    background: #e5e7eb;
-    border-radius: 999px;
-    overflow: hidden;
-  }
-
-  .case-progress__fill {
-    height: 100%;
-    background: #2563eb;
-  }
-
-  .case-batch-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 18px;
-    margin-bottom: 24px;
-  }
-
-  .case-image-card {
-    padding: 14px;
-    border: 1px solid #dbe4ef;
-    border-radius: 18px;
-    background: #ffffff;
-  }
-
-  .case-image-card img {
-    width: 100%;
-    height: 180px;
-    object-fit: contain;
-    border-radius: 12px;
-    margin-bottom: 12px;
-    background: #f8fafc;
-  }
-
-  .case-cell-select {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #cbd5e1;
-    border-radius: 12px;
-  }
-</style>
-
-<script>
-  document.body.addEventListener("htmx:configRequest", function (event) {
-    const form = event.target;
-
-    if (!form || form.id !== "case-batch-form") {
-      return;
-    }
-
-    const result = {};
-
-    document.querySelectorAll(".case-cell-select").forEach((select) => {
-      result[select.dataset.caseImageId] = select.value;
-    });
-
-    event.detail.parameters["answer"] = JSON.stringify(result);
-
-    const input = document.getElementById("case-batch-answer");
-    if (input) {
-      input.value = JSON.stringify(result);
-    }
-  });
-</script>

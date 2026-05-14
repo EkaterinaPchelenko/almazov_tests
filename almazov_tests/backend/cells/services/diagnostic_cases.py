@@ -89,6 +89,14 @@ def get_all_cell_options():
 
 
 def parse_batch_answers(raw_answer):
+    if isinstance(raw_answer, dict):
+        return {
+            int(case_image_id): int(cell_id)
+            for case_image_id, cell_id in raw_answer.items()
+            if str(case_image_id).isdigit()
+            and str(cell_id).isdigit()
+        }
+
     if not raw_answer:
         return {}
 
@@ -103,21 +111,42 @@ def parse_batch_answers(raw_answer):
     return {
         int(case_image_id): int(cell_id)
         for case_image_id, cell_id in parsed.items()
-        if str(case_image_id).isdigit() and str(cell_id).isdigit()
+        if str(case_image_id).isdigit()
+        and str(cell_id).isdigit()
     }
 
 
 @transaction.atomic
 def save_case_batch_answers(session, raw_answer):
-    answers = parse_batch_answers(raw_answer)
+    if session.status != DiagnosticCaseSession.Status.IN_PROGRESS:
+        return session, "Эта часть кейса уже завершена."
 
+    answers = parse_batch_answers(raw_answer)
     current_images = list(get_current_case_batch(session))
+
+    if not current_images:
+        session.status = DiagnosticCaseSession.Status.AWAITING_DIAGNOSIS
+        session.save(update_fields=["status"])
+        return session, None
+
     current_image_ids = {image.id for image in current_images}
+    answered_image_ids = set(answers.keys())
+
+    missing_image_ids = current_image_ids - answered_image_ids
+    extra_image_ids = answered_image_ids - current_image_ids
+
+    if missing_image_ids:
+        return session, "Выберите тип клетки для каждого изображения в текущем блоке."
+
+    if extra_image_ids:
+        return session, "Обнаружены ответы не из текущего блока. Обновите страницу и попробуйте снова."
+
+    valid_cell_ids = set(Cell.objects.filter(id__in=answers.values()).values_list("id", flat=True))
+
+    if set(answers.values()) - valid_cell_ids:
+        return session, "Один или несколько выбранных типов клеток недоступны."
 
     for case_image_id, selected_cell_id in answers.items():
-        if case_image_id not in current_image_ids:
-            continue
-
         DiagnosticCaseImageAnswer.objects.update_or_create(
             session=session,
             case_image_id=case_image_id,
@@ -126,7 +155,7 @@ def save_case_batch_answers(session, raw_answer):
             },
         )
 
-    session.current_offset += session.batch_size
+    session.current_offset += len(current_images)
 
     total_images = DiagnosticCaseImage.objects.filter(case=session.case).count()
 
@@ -135,7 +164,7 @@ def save_case_batch_answers(session, raw_answer):
 
     session.save(update_fields=["current_offset", "status"])
 
-    return session
+    return session, None
 
 
 def get_student_cell_counts(session):
