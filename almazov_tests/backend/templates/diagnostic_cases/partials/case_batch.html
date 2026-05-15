@@ -29,8 +29,59 @@
         hx-post="{% url 'submit_diagnostic_case_batch' session.id %}"
         hx-target="#diagnostic-case-content"
         hx-swap="innerHTML"
+        id="diagnostic-case-form"
     >
         {% csrf_token %}
+
+        {% if finding_items %}
+            <div class="card" style="padding: 18px; margin-bottom: 22px;">
+                <h3 style="margin-bottom: 10px;">Дополнительные признаки</h3>
+
+                <p class="section-text" style="margin-bottom: 14px;">
+                    Если во время просмотра изображений вы заметили признак, нажмите на соответствующую кнопку. Количество сохранится для всего кейса.
+                </p>
+
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    {% for finding in finding_items %}
+                        <div
+                            class="finding-counter"
+                            style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 999px; background: rgba(255,255,255,.08);"
+                        >
+                            <span style="font-weight: 700;">{{ finding.title }}</span>
+
+                            <button
+                                type="button"
+                                class="finding-minus"
+                                data-finding-id="{{ finding.id }}"
+                                style="border: none; border-radius: 999px; padding: 4px 9px; cursor: pointer;"
+                            >
+                                −
+                            </button>
+
+                            <strong id="finding-count-{{ finding.id }}">
+                                {{ finding.selected_count }}
+                            </strong>
+
+                            <button
+                                type="button"
+                                class="finding-plus"
+                                data-finding-id="{{ finding.id }}"
+                                style="border: none; border-radius: 999px; padding: 4px 9px; cursor: pointer;"
+                            >
+                                +
+                            </button>
+
+                            <input
+                                type="hidden"
+                                name="finding_{{ finding.id }}"
+                                id="finding-input-{{ finding.id }}"
+                                value="{{ finding.selected_count }}"
+                            >
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px;">
             {% for image in batch_images %}
@@ -71,3 +122,39 @@
         </div>
     </form>
 </div>
+
+<script>
+(function () {
+    const form = document.getElementById("diagnostic-case-form");
+
+    if (!form) {
+        return;
+    }
+
+    form.querySelectorAll(".finding-plus").forEach(function (button) {
+        button.addEventListener("click", function () {
+            const findingId = button.dataset.findingId;
+            const input = document.getElementById("finding-input-" + findingId);
+            const count = document.getElementById("finding-count-" + findingId);
+
+            const nextValue = Number(input.value || 0) + 1;
+
+            input.value = nextValue;
+            count.textContent = nextValue;
+        });
+    });
+
+    form.querySelectorAll(".finding-minus").forEach(function (button) {
+        button.addEventListener("click", function () {
+            const findingId = button.dataset.findingId;
+            const input = document.getElementById("finding-input-" + findingId);
+            const count = document.getElementById("finding-count-" + findingId);
+
+            const nextValue = Math.max(Number(input.value || 0) - 1, 0);
+
+            input.value = nextValue;
+            count.textContent = nextValue;
+        });
+    });
+})();
+</script>

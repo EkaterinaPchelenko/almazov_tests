@@ -5,10 +5,13 @@ from .models import (
     CellImage,
     DiagnosticCase,
     DiagnosticCaseExpectedCount,
+    DiagnosticCaseExpectedFinding,
+    DiagnosticCaseFindingAnswer,
     DiagnosticCaseImage,
     DiagnosticCaseImageAnswer,
     DiagnosticCaseProgress,
     DiagnosticCaseSession,
+    DiagnosticFinding,
     GlobalImageStats,
     ImageSimilarity,
     Level,
@@ -47,10 +50,27 @@ class UserLevelProgressAdmin(admin.ModelAdmin):
     list_filter = ("is_unlocked", "level")
 
 
+@admin.register(Cell)
+class CellAdmin(admin.ModelAdmin):
+    search_fields = ("name", "latin_name")
+
+
+@admin.register(DiagnosticFinding)
+class DiagnosticFindingAdmin(admin.ModelAdmin):
+    list_display = ("title",)
+    search_fields = ("title",)
+
+
 class DiagnosticCaseExpectedCountInline(admin.TabularInline):
     model = DiagnosticCaseExpectedCount
     extra = 1
     autocomplete_fields = ("cell",)
+
+
+class DiagnosticCaseExpectedFindingInline(admin.TabularInline):
+    model = DiagnosticCaseExpectedFinding
+    extra = 1
+    autocomplete_fields = ("finding",)
 
 
 class DiagnosticCaseImageInline(admin.TabularInline):
@@ -65,6 +85,7 @@ class DiagnosticCaseAdmin(admin.ModelAdmin):
     search_fields = ("title", "diagnosis", "note")
     inlines = [
         DiagnosticCaseExpectedCountInline,
+        DiagnosticCaseExpectedFindingInline,
         DiagnosticCaseImageInline,
     ]
 
@@ -105,9 +126,12 @@ class DiagnosticCaseImageAnswerAdmin(admin.ModelAdmin):
     autocomplete_fields = ("selected_cell",)
 
 
-@admin.register(Cell)
-class CellAdmin(admin.ModelAdmin):
-    search_fields = ("name",)
+@admin.register(DiagnosticCaseFindingAnswer)
+class DiagnosticCaseFindingAnswerAdmin(admin.ModelAdmin):
+    list_display = ("session", "finding", "selected_count")
+    list_filter = ("finding",)
+    search_fields = ("finding__title", "session__case__title")
+    autocomplete_fields = ("finding",)
 
 
 admin.site.register(LevelCell)

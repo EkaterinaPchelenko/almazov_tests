@@ -32,6 +32,10 @@ from .services.diagnostic_cases import (
     get_available_diagnoses,
     get_current_case_batch,
     save_case_batch_answers,
+    get_case_finding_options,
+    build_findings_comparison,
+    get_finding_counter_items,
+    save_case_finding_answers,
 )
 from .services.progress import save_answer
 from .services.question_builder import build_question
@@ -602,6 +606,7 @@ def diagnostic_case_batch_partial(request, session_id):
                 "session": session,
                 "comparison": build_counts_comparison(session),
                 "diagnoses": get_available_diagnoses(),
+                "findings_comparison": build_findings_comparison(session),
             },
         )
 
@@ -630,8 +635,10 @@ def diagnostic_case_batch_partial(request, session_id):
             "cell_options": cell_options,
             "progress_percent": progress_percent,
             "from_number": session.current_offset + 1,
+            "finding_options": get_case_finding_options(session.case),
             "to_number": min(session.current_offset + session.batch_size, total_images),
             "total_images": total_images,
+            "finding_items": get_finding_counter_items(session),
         },
     )
 
@@ -652,6 +659,7 @@ def submit_diagnostic_case_batch(request, session_id):
         for key, value in request.POST.items()
         if key.startswith("cell_")
     }
+    save_case_finding_answers(session, request.POST)
 
     session, error_message = save_case_batch_answers(session, raw_answer)
 
@@ -684,6 +692,7 @@ def submit_diagnostic_case_batch(request, session_id):
                 "session": session,
                 "comparison": build_counts_comparison(session),
                 "diagnoses": get_available_diagnoses(),
+                "findings_comparison": build_findings_comparison(session),
             },
         )
 
@@ -702,6 +711,7 @@ def submit_diagnostic_case_diagnosis(request, session_id):
     )
 
     selected_diagnosis = request.POST.get("diagnosis", "")
+    save_case_finding_answers(session, request.POST)
     session = finish_diagnostic_case_session(session, selected_diagnosis)
 
     return render(
@@ -710,5 +720,6 @@ def submit_diagnostic_case_diagnosis(request, session_id):
         {
             "session": session,
             "comparison": build_counts_comparison(session),
+            "findings_comparison": build_findings_comparison(session),
         },
     )

@@ -443,3 +443,65 @@ class DiagnosticCaseImageAnswer(models.Model):
 
     def __str__(self):
         return f"{self.session} — {self.case_image} → {self.selected_cell}"
+
+
+
+class DiagnosticFinding(models.Model):
+    title = models.CharField(max_length=255, unique=True)
+
+    class Meta:
+        ordering = ["title"]
+
+    def __str__(self):
+        return self.title
+
+
+class DiagnosticCaseExpectedFinding(models.Model):
+    case = models.ForeignKey(
+        DiagnosticCase,
+        on_delete=models.CASCADE,
+        related_name="expected_findings",
+    )
+    finding = models.ForeignKey(
+        DiagnosticFinding,
+        on_delete=models.CASCADE,
+        related_name="case_expected_findings",
+    )
+    expected_count = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["finding__title"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["case", "finding"],
+                name="uq_diagnostic_case_expected_finding",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.case} — {self.finding.title}: {self.expected_count}"
+
+
+class DiagnosticCaseFindingAnswer(models.Model):
+    session = models.ForeignKey(
+        DiagnosticCaseSession,
+        on_delete=models.CASCADE,
+        related_name="finding_answers",
+    )
+    finding = models.ForeignKey(
+        DiagnosticFinding,
+        on_delete=models.CASCADE,
+        related_name="student_diagnostic_answers",
+    )
+    selected_count = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["session", "finding"],
+                name="uq_diagnostic_case_finding_answer",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.session} — {self.finding.title}: {self.selected_count}"

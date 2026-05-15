@@ -1,54 +1,84 @@
-<div id="diagnostic-case-container">
-  <h2>Предварительные количественные результаты</h2>
+<div class="card card--soft" style="padding: 28px;">
+    <h2 class="section-title" style="font-size: 26px; margin-bottom: 8px;">
+        Предварительные количественные результаты
+    </h2>
 
-  <p>
-    Ниже показано, сколько клеток каждого типа насчитал студент.
-    Теперь выберите диагноз.
-  </p>
+    <p class="section-text" style="margin-bottom: 22px;">
+        Ниже показано, сколько клеток каждого типа вы насчитали. Проверьте дополнительные признаки и выберите диагноз.
+    </p>
 
-  <table class="case-counts-table">
-    <thead>
-      <tr>
-        <th>Клетка</th>
-        <th>Ваш подсчёт</th>
-      </tr>
-    </thead>
+    <div class="card" style="padding: 18px; margin-bottom: 24px;">
+        <h3 style="margin-bottom: 14px;">Подсчёт клеток</h3>
 
-    <tbody>
-      {% for item in comparison %}
-        {% if item.student_count > 0 %}
-          <tr>
-            <td>{{ item.cell_name }}</td>
-            <td>{{ item.student_count }}</td>
-          </tr>
+        <div style="display: grid; gap: 10px;">
+            {% for item in comparison %}
+                {% if item.student_count > 0 %}
+                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.08);">
+                        <div>{{ item.cell_name }}</div>
+                        <strong>{{ item.student_count }}</strong>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <form
+        hx-post="{% url 'submit_diagnostic_case_diagnosis' session.id %}"
+        hx-target="#diagnostic-case-content"
+        hx-swap="innerHTML"
+    >
+        {% csrf_token %}
+
+        {% if findings_comparison %}
+            <div class="card" style="padding: 18px; margin-bottom: 24px;">
+                <h3 style="margin-bottom: 10px;">Дополнительные признаки</h3>
+
+                <p class="section-text" style="margin-bottom: 16px;">
+                    Укажите, сколько раз вы встретили каждый дополнительный признак в кейсе.
+                </p>
+
+                <div style="display: grid; gap: 12px;">
+                    {% for item in findings_comparison %}
+                        <label style="display: grid; grid-template-columns: 1fr 120px; gap: 12px; align-items: center;">
+                            <span>{{ item.title }}</span>
+
+                            <input
+                                type="number"
+                                name="finding_{{ item.finding_id }}"
+                                min="0"
+                                value="{{ item.student_count }}"
+                                style="width: 100%; padding: 10px 12px; border-radius: 12px;"
+                            >
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
         {% endif %}
-      {% endfor %}
-    </tbody>
-  </table>
 
-  <form
-    hx-post="{% url 'submit_diagnostic_case_diagnosis' session.id %}"
-    hx-target="#diagnostic-case-container"
-    hx-swap="outerHTML"
-  >
-    {% csrf_token %}
+        <div class="card" style="padding: 18px;">
+            <label for="diagnosis" style="display: block; font-weight: 700; margin-bottom: 8px;">
+                Выберите диагноз
+            </label>
 
-    <label class="diagnosis-label" for="diagnosis">
-      Выберите диагноз
-    </label>
+            <select
+                id="diagnosis"
+                name="diagnosis"
+                required
+                style="width: 100%; padding: 12px 14px; border-radius: 14px;"
+            >
+                <option value="">Выберите диагноз</option>
+                {% for diagnosis in diagnoses %}
+                    <option value="{{ diagnosis }}">{{ diagnosis }}</option>
+                {% endfor %}
+            </select>
 
-    <select id="diagnosis" name="diagnosis" required class="diagnosis-select">
-      <option value="">Выберите диагноз</option>
-
-      {% for diagnosis in diagnoses %}
-        <option value="{{ diagnosis }}">{{ diagnosis }}</option>
-      {% endfor %}
-    </select>
-
-    <button type="submit" class="btn btn--primary">
-      Подтвердить диагноз
-    </button>
-  </form>
+            <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+                <button type="submit" class="btn btn-primary">
+                    Подтвердить диагноз
+                </button>
+            </div>
+        </div>
+    </form>
 </div>
 
 <style>

@@ -1,73 +1,103 @@
-<div id="diagnostic-case-container">
-  <div class="case-result-card">
+<div class="card card--soft" style="padding: 28px;">
     {% if session.counts_are_correct %}
-      <h2 class="case-result-title success">Кейс пройден</h2>
-      <p>
-        Количественный подсчёт совпал с эталоном.
-      </p>
+        <h2 class="section-title" style="font-size: 28px; margin-bottom: 8px;">
+            Кейс пройден
+        </h2>
+
+        <p class="section-text" style="margin-bottom: 22px;">
+            Количественный подсчёт совпал с эталоном.
+        </p>
     {% else %}
-      <h2 class="case-result-title error">Кейс не пройден</h2>
-      <p>
-        Количественный подсчёт не совпал с эталоном.
-        При следующей попытке откроется этот же кейс.
-      </p>
+        <h2 class="section-title" style="font-size: 28px; margin-bottom: 8px;">
+            Кейс не пройден
+        </h2>
+
+        <p class="section-text" style="margin-bottom: 22px;">
+            Количественный подсчёт не совпал с эталоном. При следующей попытке откроется этот же кейс.
+        </p>
     {% endif %}
 
-    <div class="case-diagnosis-box">
-      <p><strong>Ваш диагноз:</strong> {{ session.selected_diagnosis }}</p>
-      <p><strong>Правильный диагноз:</strong> {{ session.case.diagnosis }}</p>
+    <div class="card" style="padding: 18px; margin-bottom: 24px;">
+        <h3 style="margin-bottom: 14px;">Диагноз</h3>
 
-      {% if session.diagnosis_is_correct %}
-        <p class="success">Диагноз выбран верно.</p>
-      {% else %}
-        <p class="error">Диагноз выбран неверно.</p>
-      {% endif %}
+        <div style="display: grid; gap: 10px;">
+            <div>
+                Ваш диагноз: <strong>{{ session.selected_diagnosis }}</strong>
+            </div>
+
+<!--            <div>-->
+<!--                Правильный диагноз: <strong>{{ session.case.diagnosis }}</strong>-->
+<!--            </div>-->
+
+            <div>
+                {% if session.diagnosis_is_correct %}
+                    Диагноз выбран верно.
+                {% else %}
+                    Диагноз выбран неверно.
+                {% endif %}
+            </div>
+        </div>
     </div>
 
-    <h3>Сравнение количеств</h3>
+    <div class="card" style="padding: 18px; margin-bottom: 24px;">
+        <h3 style="margin-bottom: 14px;">Сравнение количеств клеток</h3>
 
-    <table class="case-counts-table">
-      <thead>
-        <tr>
-          <th>Клетка</th>
-          <th>Ваш подсчёт</th>
-          <th>Эталон</th>
-          <th>Статус</th>
-        </tr>
-      </thead>
+        <div style="display: grid; gap: 10px;">
+            {% for item in comparison %}
+                <div style="display: grid; grid-template-columns: 1fr auto auto auto; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.08);">
+                    <div>{{ item.cell_name }}</div>
+                    <div>Ваш ответ: <strong>{{ item.student_count }}</strong></div>
+<!--                    <div>Эталон: <strong>{{ item.expected_count }}</strong></div>-->
+                    <div>
+                        {% if item.is_correct %}
+                            Верно
+                        {% else %}
+                            Неверно
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
 
-      <tbody>
-        {% for item in comparison %}
-          <tr class="{% if item.is_correct %}row-success{% else %}row-error{% endif %}">
-            <td>{{ item.cell_name }}</td>
-            <td>{{ item.student_count }}</td>
-            <td>{{ item.expected_count }}</td>
-            <td>
-              {% if item.is_correct %}
-                Верно
-              {% else %}
-                Неверно
-              {% endif %}
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    {% if findings_comparison %}
+        <div class="card" style="padding: 18px; margin-bottom: 24px;">
+            <h3 style="margin-bottom: 14px;">Дополнительные признаки</h3>
 
-    <a href="{% url 'levels_page' %}" class="btn btn--secondary">
-      Вернуться к уровням
-    </a>
-
-    {% if not session.counts_are_correct %}
-      <a href="{% url 'start_diagnostic_case_level' %}" class="btn btn--primary">
-        Повторить кейс
-      </a>
-    {% else %}
-      <a href="{% url 'start_diagnostic_case_level' %}" class="btn btn--primary">
-        Следующий кейс
-      </a>
+            <div style="display: grid; gap: 10px;">
+                {% for item in findings_comparison %}
+                    <div style="display: grid; grid-template-columns: 1fr auto auto auto; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.08);">
+                        <div>{{ item.title }}</div>
+                        <div>Ваш ответ: <strong>{{ item.student_count }}</strong></div>
+<!--                        <div>Эталон: <strong>{{ item.expected_count }}</strong></div>-->
+                        <div>
+                            {% if item.is_correct %}
+                                Верно
+                            {% else %}
+                                Неверно
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
     {% endif %}
-  </div>
+
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href="{% url 'levels_page' %}" class="btn btn-secondary">
+            Вернуться к уровням
+        </a>
+
+        {% if not session.counts_are_correct %}
+            <a href="{% url 'start_diagnostic_case_level' %}" class="btn btn-primary">
+                Повторить кейс
+            </a>
+        {% else %}
+            <a href="{% url 'start_diagnostic_case_level' %}" class="btn btn-primary">
+                Следующий кейс
+            </a>
+        {% endif %}
+    </div>
 </div>
 
 <style>
