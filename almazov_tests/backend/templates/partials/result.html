@@ -1,3 +1,4 @@
+{% load time_format %}
 <div class="card card--soft" style="padding: 36px; max-width: 760px; margin: 0 auto;">
     <div style="display: flex; flex-direction: column; gap: 22px; align-items: center; text-align: center;">
         <div style="
@@ -67,6 +68,11 @@
                         Не пройдено
                     {% endif %}
                 </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card__label">Время прохождения</div>
+                <div class="stat-card__value">{{ session.duration_seconds|format_duration }}</div>
             </div>
         {% endif %}
 

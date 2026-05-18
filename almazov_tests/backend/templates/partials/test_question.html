@@ -4,6 +4,13 @@
       <div class="progress__bar" style="width: {{ percent }}%;"></div>
     </div>
   </div>
+  <div
+      id="test-timer"
+      data-started-at="{{ session.started_at|date:'c' }}"
+      style="font-size: 20px; font-weight: 700;"
+  >
+      00:00
+  </div>
 
   {% if question.type == "matching" %}
 
@@ -106,6 +113,9 @@
       {% csrf_token %}
 
       {% if question.type == "image_to_name" %}
+        <h3 class="question-title">
+          Выберите название клетки изображённой на рисунке
+        </h3>
         <div class="question-image">
           <img src="{{ question.image.image.url }}" alt="">
         </div>
@@ -466,4 +476,34 @@
       input.value = answer;
     }
   });
+
+(function () {
+    const timer = document.getElementById("test-timer");
+    if (!timer) return;
+
+    const startedAt = new Date(timer.dataset.startedAt);
+
+    function pad(value) {
+        return String(value).padStart(2, "0");
+    }
+
+    function renderTimer() {
+        const diffSeconds = Math.max(
+            Math.floor((new Date() - startedAt) / 1000),
+            0
+        );
+
+        const hours = Math.floor(diffSeconds / 3600);
+        const minutes = Math.floor((diffSeconds % 3600) / 60);
+        const seconds = diffSeconds % 60;
+
+        timer.textContent = hours > 0
+            ? `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
+            : `${pad(minutes)}:${pad(seconds)}`;
+    }
+
+    renderTimer();
+    setInterval(renderTimer, 1000);
+})();
+
 </script>

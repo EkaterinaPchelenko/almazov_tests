@@ -1,4 +1,11 @@
+{% load time_format %}
 <div class="card card--soft" style="padding: 28px;">
+    <p>
+        Время прохождения:
+        <strong>
+            {{ session.duration_seconds|format_duration }}
+        </strong>
+    </p>
     {% if session.counts_are_correct %}
         <h2 class="section-title" style="font-size: 28px; margin-bottom: 8px;">
             Кейс пройден

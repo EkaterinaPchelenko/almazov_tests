@@ -80,8 +80,25 @@ def save_answer(session, session_image, user_answer, response_time_ms=None):
     remaining = session.session_images.filter(is_answered=False).exists()
 
     if not remaining:
+        finished_at = timezone.now()
+
         session.status = TestSession.Status.COMPLETED
-        session.finished_at = timezone.now()
+        session.finished_at = finished_at
+        session.duration_seconds = max(
+            int((finished_at - session.started_at).total_seconds()),
+            0,
+        )
+
+        session.save(
+            update_fields=[
+                "correct_answers",
+                "status",
+                "finished_at",
+                "duration_seconds",
+            ]
+        )
+    else:
+        session.save(update_fields=["correct_answers"])
 
     session.save(update_fields=["correct_answers", "status", "finished_at"])
 

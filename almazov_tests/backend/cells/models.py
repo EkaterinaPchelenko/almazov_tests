@@ -159,6 +159,7 @@ class TestSession(models.Model):
     level_completion_recorded = models.BooleanField(default=False)
     started_at = models.DateTimeField(auto_now_add=True)
     finished_at = models.DateTimeField(null=True, blank=True)
+    duration_seconds = models.PositiveIntegerField(default=0)
     total_questions = models.PositiveIntegerField(default=0)
     correct_answers = models.PositiveIntegerField(default=0)
 
@@ -406,7 +407,7 @@ class DiagnosticCaseSession(models.Model):
 
     started_at = models.DateTimeField(auto_now_add=True)
     finished_at = models.DateTimeField(null=True, blank=True)
-
+    duration_seconds = models.PositiveIntegerField(default=0)
     class Meta:
         ordering = ["-started_at"]
 

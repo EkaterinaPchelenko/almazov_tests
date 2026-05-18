@@ -361,7 +361,12 @@ def finish_diagnostic_case_session(session, selected_diagnosis):
     session.diagnosis_is_correct = selected_diagnosis == session.case.diagnosis
     session.counts_are_correct = counts_are_correct(session)
     session.status = DiagnosticCaseSession.Status.COMPLETED
-    session.finished_at = timezone.now()
+    finished_at = timezone.now()
+    session.finished_at = finished_at
+    session.duration_seconds = max(
+        int((finished_at - session.started_at).total_seconds()),
+        0,
+    )
 
     session.save(
         update_fields=[
@@ -370,6 +375,7 @@ def finish_diagnostic_case_session(session, selected_diagnosis):
             "diagnosis_is_correct",
             "status",
             "finished_at",
+            "duration_seconds",
         ]
     )
 
