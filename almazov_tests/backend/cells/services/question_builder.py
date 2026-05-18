@@ -4,6 +4,10 @@ from cells.models import Cell, CellImage, Level
 
 def build_question(current_item, session, choice_count, allowed_cell_ids=None):
     level = session.level
+
+    if level is None:
+        return _image_to_name(current_item, choice_count, allowed_cell_ids)
+
     qtype = level.question_type
 
     if qtype == Level.QuestionType.IMAGE_TO_NAME:
