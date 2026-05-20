@@ -278,6 +278,15 @@
                 <div class="auth-errors">{{ form.email.errors }}</div>
               {% endif %}
             </div>
+            <div>
+                <label>Группа</label>
+                {{ form.group }}
+                {% if form.group.errors %}
+                    <div class="form-errors">
+                        {{ form.group.errors }}
+                    </div>
+                {% endif %}
+            </div>
 
             <div class="auth-field auth-field--full">
               <label class="auth-label" for="{{ form.password1.id_for_label }}">Password</label>

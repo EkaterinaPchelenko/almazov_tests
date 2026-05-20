@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Панель преподавателя | Medical Cell Trainer{% endblock %}
+
+{% block content %}
+<section class="card card--soft" style="padding: 28px; margin-bottom: 24px;">
+    <h1 class="section-title" style="font-size: 34px;">Панель преподавателя</h1>
+    <p class="section-text" style="margin-top: 8px;">
+        Здесь отображается статистика студентов по обычным тестам, адаптивным тестам, уровням и диагностическим кейсам.
+    </p>
+</section>
+
+<section class="card" style="padding: 24px; margin-bottom: 24px;">
+    <form method="get" style="display: flex; gap: 16px; align-items: end; flex-wrap: wrap;">
+        <div>
+            <label for="group" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                Группа
+            </label>
+
+            <select id="group" name="group" class="auth-input">
+                <option value="">Все группы</option>
+
+                {% for group in groups %}
+                    <option value="{{ group.id }}" {% if selected_group_id == group.id %}selected{% endif %}>
+                        {{ group.number }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label for="search" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                Поиск студента
+            </label>
+
+            <input
+                id="search"
+                name="search"
+                type="text"
+                class="auth-input"
+                placeholder="Фамилия, имя, логин или email"
+                value="{{ search }}"
+            >
+        </div>
+
+        <button type="submit" class="btn btn--primary">
+            Показать статистику
+        </button>
+
+        <a href="{% url 'teacher_dashboard' %}" class="btn btn--secondary">
+            Сбросить
+        </a>
+    </form>
+</section>
+
+<section style="display: grid; grid-template-columns: repeat(4, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">
+    <div class="card" style="padding: 20px;">
+        <div class="section-text">Студентов</div>
+        <strong style="font-size: 30px;">{{ total_students }}</strong>
+    </div>
+
+    <div class="card" style="padding: 20px;">
+        <div class="section-text">Завершённых тестов</div>
+        <strong style="font-size: 30px;">{{ total_tests_completed }}</strong>
+    </div>
+
+    <div class="card" style="padding: 20px;">
+        <div class="section-text">Средняя точность</div>
+        <strong style="font-size: 30px;">{{ average_accuracy }}%</strong>
+    </div>
+
+    <div class="card" style="padding: 20px;">
+        <div class="section-text">Успешность кейсов</div>
+        <strong style="font-size: 30px;">{{ diagnostic_success_percent }}%</strong>
+    </div>
+</section>
+
+<section class="card" style="padding: 24px;">
+    <h2 class="section-title" style="margin-bottom: 18px;">
+        Статистика студентов{% if selected_group %}: группа {{ selected_group.number }}{% endif %}
+    </h2>
+
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="text-align: left;">
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Студент</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Группа</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Тестов</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Средняя точность</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Кейсов</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Успешных кейсов</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for item in students_stats %}
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            <a href="{% url 'teacher_student_detail' item.profile.id %}">
+                                {% if item.profile.user.last_name or item.profile.user.first_name %}
+                                    {{ item.profile.user.last_name }} {{ item.profile.user.first_name }}
+                                {% else %}
+                                    {{ item.profile.user.username }}
+                                {% endif %}
+                            </a>
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {{ item.profile.group.number }}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {{ item.tests_completed }}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {{ item.average_accuracy }}%
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {{ item.diagnostic_cases_completed }}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {{ item.diagnostic_cases_successful }}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6" style="padding: 20px;">
+                            По выбранной группе пока нет студентов.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

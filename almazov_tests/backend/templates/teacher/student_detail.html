@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+{% load time_format %}
+
+{% block title %}Статистика студента | Medical Cell Trainer{% endblock %}
+
+{% block content %}
+<section class="card card--soft" style="padding: 28px; margin-bottom: 24px;">
+    <a href="{% url 'teacher_dashboard' %}" class="btn btn--secondary" style="margin-bottom: 18px;">
+        ← Назад к панели преподавателя
+    </a>
+
+    <h1 class="section-title" style="font-size: 34px;">
+        {% if student.last_name or student.first_name %}
+            {{ student.last_name }} {{ student.first_name }}
+        {% else %}
+            {{ student.username }}
+        {% endif %}
+    </h1>
+
+    <p class="section-text" style="margin-top: 8px;">
+        Группа: <strong>{{ profile.group.number }}</strong><br>
+        Email: <strong>{{ student.email }}</strong>
+    </p>
+</section>
+
+<section style="display: grid; grid-template-columns: repeat(4, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">
+    <div class="card" style="padding: 20px;">
+        <div class="section-text">Завершённых тестов</div>
+        <strong style="font-size: 30px;">{{ total_completed_tests }}</strong>
+    </div>
+
+    <div class="card" style="padding: 20px;">
+        <div class="section-text">Средняя точность</div>
+        <strong style="font-size: 30px;">{{ average_accuracy }}%</strong>
+    </div>
+
+    <div class="card" style="padding: 20px;">
+        <div class="section-text">Тестов на 100%</div>
+        <strong style="font-size: 30px;">{{ tests_100_count }}</strong>
+    </div>
+
+    <div class="card" style="padding: 20px;">
+        <div class="section-text">Диагностических попыток</div>
+        <strong style="font-size: 30px;">{{ total_diagnostic_sessions }}</strong>
+    </div>
+</section>
+
+<section class="card" style="padding: 24px; margin-bottom: 24px;">
+    <h2 class="section-title" style="margin-bottom: 18px;">Прогресс по уровням</h2>
+
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="text-align: left;">
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Уровень</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Тип</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Открыт</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Пройден</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Успешных прохождений</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Лучший результат</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Последний результат</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Дата завершения</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for item in level_rows %}
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {{ item.level.order }}. {{ item.level.title }}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {{ item.level.get_question_type_display }}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {% if item.is_unlocked %}Да{% else %}Нет{% endif %}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {% if item.is_completed %}Да{% else %}Нет{% endif %}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {{ item.completions_count }} / {{ item.level.required_completions }}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {{ item.best_score }}%
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {{ item.last_score }}%
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {% if item.completed_at %}
+                                {{ item.completed_at|date:"d.m.Y H:i" }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8" style="padding: 20px;">Уровни ещё не созданы.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="card" style="padding: 24px; margin-bottom: 24px;">
+    <h2 class="section-title" style="margin-bottom: 18px;">История обычных тестов</h2>
+
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="text-align: left;">
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Тест</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Режим</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Статус</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Дата начала</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Дата завершения</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Время</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Результат</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Точность</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for item in test_rows %}
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {{ item.title }}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {{ item.session.get_mode_display }}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {{ item.session.get_status_display }}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {{ item.session.started_at|date:"d.m.Y H:i" }}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {% if item.session.finished_at %}
+                                {{ item.session.finished_at|date:"d.m.Y H:i" }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {{ item.session.duration_seconds|format_duration }}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {{ item.session.correct_answers }} / {{ item.session.total_questions }}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {{ item.accuracy }}%
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8" style="padding: 20px;">Студент ещё не проходил обычные тесты.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="card" style="padding: 24px; margin-bottom: 24px;">
+    <h2 class="section-title" style="margin-bottom: 18px;">Прогресс по диагностическим кейсам</h2>
+
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="text-align: left;">
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Кейс</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Пройден</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Попыток</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Последняя попытка</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Дата завершения</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for item in diagnostic_progress_rows %}
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {{ item.case.title }}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {% if item.is_completed %}Да{% else %}Нет{% endif %}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {{ item.attempts_count }}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {% if item.last_attempt_at %}
+                                {{ item.last_attempt_at|date:"d.m.Y H:i" }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {% if item.completed_at %}
+                                {{ item.completed_at|date:"d.m.Y H:i" }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" style="padding: 20px;">Диагностические кейсы ещё не созданы.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="card" style="padding: 24px;">
+    <h2 class="section-title" style="margin-bottom: 18px;">История диагностических кейсов</h2>
+
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="text-align: left;">
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Кейс</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Статус</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Количество клеток</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Диагноз</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Итог</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Дата начала</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Дата завершения</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #ddd;">Время</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for item in diagnostic_rows %}
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {{ item.session.case.title }}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {{ item.session.get_status_display }}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {% if item.session.counts_are_correct %}Верно{% else %}Неверно{% endif %}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {% if item.session.diagnosis_is_correct %}Верно{% else %}Неверно{% endif %}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {% if item.is_successful %}Пройден{% else %}Не пройден{% endif %}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {{ item.session.started_at|date:"d.m.Y H:i" }}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {% if item.session.finished_at %}
+                                {{ item.session.finished_at|date:"d.m.Y H:i" }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                            {{ item.session.duration_seconds|format_duration }}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8" style="padding: 20px;">Студент ещё не проходил диагностические кейсы.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

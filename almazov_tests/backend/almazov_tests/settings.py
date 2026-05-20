@@ -137,7 +137,7 @@ REST_FRAMEWORK = {
 
 AUTH_USER_MODEL = 'users.User'
 LOGIN_URL = "/login/"
-LOGIN_REDIRECT_URL = "dashboard"
+LOGIN_REDIRECT_URL = "after_login"
 LOGOUT_REDIRECT_URL = "login"
 
 # Используем S3 backend

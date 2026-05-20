@@ -30,6 +30,39 @@ class CustomAuthenticationForm(AuthenticationForm):
 
 
 class CustomUserCreationForm(UserCreationForm):
+    first_name = forms.CharField(
+        label="Имя",
+        required=True,
+        widget=forms.TextInput(
+            attrs={
+                "class": "auth-input",
+                "placeholder": "Иван",
+            }
+        ),
+    )
+
+    last_name = forms.CharField(
+        label="Фамилия",
+        required=True,
+        widget=forms.TextInput(
+            attrs={
+                "class": "auth-input",
+                "placeholder": "Иванов",
+            }
+        ),
+    )
+    group = forms.ModelChoiceField(
+        label="Группа",
+        queryset=None,
+        empty_label="Выберите группу",
+        required=True,
+        widget=forms.Select(
+            attrs={
+                "class": "auth-input",
+            }
+        ),
+    )
+
     username = forms.CharField(
         label="Логин",
         widget=forms.TextInput(
@@ -76,4 +109,10 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ("username", "email")
+        fields = ("last_name", "first_name", "username", "email", "group", "password1", "password2")
+
+    def __init__(self, *args, **kwargs):
+        from .models import StudentGroup
+
+        super().__init__(*args, **kwargs)
+        self.fields["group"].queryset = StudentGroup.objects.all()

@@ -24,18 +24,36 @@ class User(AbstractUser):
         return self.email
 
 
+class StudentGroup(models.Model):
+    number = models.CharField(
+        max_length=50,
+        unique=True,
+        verbose_name="Номер группы",
+    )
+
+    class Meta:
+        ordering = ["number"]
+        verbose_name = "Группа студентов"
+        verbose_name_plural = "Группы студентов"
+
+    def __str__(self):
+        return self.number
+
+
 class StudentProfile(models.Model):
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
-        related_name="student_profile"
+        related_name="student_profile",
     )
-
-    group = models.CharField(max_length=50)
-
+    group = models.ForeignKey(
+        StudentGroup,
+        on_delete=models.PROTECT,
+        related_name="students",
+        verbose_name="Группа",
+    )
     overall_accuracy = models.FloatField(default=0)
     total_tests_passed = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"{self.user.email} profile"
-
