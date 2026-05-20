@@ -2,7 +2,6 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Avg, Count, F, FloatField, Q
 from django.db.models.functions import Cast
 from django.http import HttpResponseForbidden
-from django.shortcuts import render
 from django.shortcuts import get_object_or_404, render
 from cells.models import (
     TestSession,
@@ -12,7 +11,6 @@ from cells.models import (
     Level,
     UserLevelProgress,
 )
-from cells.models import TestSession, DiagnosticCaseSession
 from .models import StudentGroup, StudentProfile, User
 
 

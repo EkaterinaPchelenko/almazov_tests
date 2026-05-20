@@ -1,303 +1,114 @@
 <div id="test-container">
-  <div class="feedback-card {% if answer.is_correct %}feedback-card--success{% else %}feedback-card--error{% endif %}">
+    <div class="feedback-card {% if answer.is_correct %}feedback-card--success{% else %}feedback-card--error{% endif %}">
+        <div class="feedback-header">
+            <div class="feedback-icon {% if answer.is_correct %}feedback-icon--success{% else %}feedback-icon--error{% endif %}">
+                {% if answer.is_correct %}
+                    ✓
+                {% else %}
+                    ×
+                {% endif %}
+            </div>
 
-    <div class="feedback-header">
-      <div class="feedback-icon {% if answer.is_correct %}feedback-icon--success{% else %}feedback-icon--error{% endif %}">
+            <div class="feedback-title-block">
+                <div class="feedback-subtitle">Результат</div>
+
+                {% if answer.is_correct %}
+                    <h2 class="feedback-title">Правильный ответ</h2>
+                    <p class="feedback-description">
+                        Отлично — ты выбрал правильный вариант.
+                    </p>
+                {% else %}
+                    <h2 class="feedback-title">Неправильный ответ</h2>
+                    <p class="feedback-description">
+                        Не страшно — правильный ответ показан ниже.
+                    </p>
+                {% endif %}
+            </div>
+
+            <div class="feedback-status {% if answer.is_correct %}feedback-status--success{% else %}feedback-status--error{% endif %}">
+                {% if answer.is_correct %}
+                    Успешно
+                {% else %}
+                    Попробуй дальше
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="feedback-divider"></div>
+
+        <div class="feedback-grid">
+            <div class="feedback-box">
+                <div class="feedback-label">ВАШ ВЫБОР</div>
+
+                {% if selected_image %}
+                    <img
+                        class="feedback-image"
+                        src="{{ selected_image.image.url }}"
+                        alt="Ваш выбор"
+                    >
+                {% else %}
+                    <strong>{{ answer.user_answer|default:"—" }}</strong>
+                {% endif %}
+            </div>
+
+            <div class="feedback-box">
+                <div class="feedback-label">ПРАВИЛЬНЫЙ ОТВЕТ</div>
+
+                {% if selected_image %}
+                    <img
+                        class="feedback-image"
+                        src="{{ answer.image.image.url }}"
+                        alt="Правильный ответ"
+                    >
+                {% else %}
+                    <strong>{{ answer.image.cell.name }}</strong>
+                {% endif %}
+            </div>
+        </div>
+
         {% if answer.is_correct %}
-          ✓
+            <div class="feedback-message feedback-message--success">
+                Ты правильно определил тип клетки по микроскопическому изображению.
+                Нажми кнопку ниже, чтобы перейти к следующему вопросу.
+            </div>
         {% else %}
-          ×
+            <div class="feedback-message feedback-message--error">
+                Сравни свой выбор с правильным ответом и попробуй обратить внимание
+                на форму клетки, ядро и характерные морфологические признаки
+                в следующем вопросе.
+            </div>
         {% endif %}
-      </div>
 
-      <div class="feedback-title-block">
-        <div class="feedback-subtitle">Answer Result</div>
+        <div class="feedback-footer">
+            <div class="feedback-meta">
+                <strong>Режим:</strong>
 
-        {% if answer.is_correct %}
-          <h2 class="feedback-title">Correct answer</h2>
-          <p class="feedback-description">
-            Отлично — ты выбрал правильный вариант.
-          </p>
-        {% else %}
-          <h2 class="feedback-title">Incorrect answer</h2>
-          <p class="feedback-description">
-            Не страшно — правильный ответ показан ниже.
-          </p>
-        {% endif %}
-      </div>
+                {% if session.mode == "level" %}
+                    level test
+                {% else %}
+                    {{ session.mode }}
+                {% endif %}
+            </div>
 
-      <div class="feedback-status {% if answer.is_correct %}feedback-status--success{% else %}feedback-status--error{% endif %}">
-        {% if answer.is_correct %}
-          Success
-        {% else %}
-          Try next
-        {% endif %}
-      </div>
+            <div class="feedback-meta">
+                <strong>Статус:</strong>
+
+                {% if answer.is_correct %}
+                    ответ засчитан как верный
+                {% else %}
+                    ответ засчитан как неверный
+                {% endif %}
+            </div>
+
+            <button
+                type="button"
+                class="btn btn--primary feedback-continue"
+                hx-get="{% url 'test_question_partial' session.id %}"
+                hx-target="#test-container"
+                hx-swap="outerHTML"
+            >
+                Продолжить
+            </button>
+        </div>
     </div>
-
-    <div class="feedback-divider"></div>
-
-    <div class="feedback-grid">
-      <div class="feedback-box">
-        <div class="feedback-label">ВАШ ВЫБОР</div>
-
-        {% if selected_image %}
-          <img
-            class="feedback-image"
-            src="{{ selected_image.image.url }}"
-            alt="Ваш выбор"
-          >
-        {% else %}
-          <strong>{{ answer.user_answer|default:"—" }}</strong>
-        {% endif %}
-      </div>
-
-      <div class="feedback-box">
-        <div class="feedback-label">ПРАВИЛЬНЫЙ ОТВЕТ</div>
-
-        {% if selected_image %}
-          <img
-            class="feedback-image"
-            src="{{ answer.image.image.url }}"
-            alt="Правильный ответ"
-          >
-        {% else %}
-          <strong>{{ answer.image.cell.name }}</strong>
-        {% endif %}
-      </div>
-    </div>
-
-    {% if answer.is_correct %}
-      <div class="feedback-message feedback-message--success">
-        Ты правильно определил тип клетки по микроскопическому изображению.
-        Нажми кнопку ниже, чтобы перейти к следующему вопросу.
-      </div>
-    {% else %}
-      <div class="feedback-message feedback-message--error">
-        Сравни свой выбор с правильным ответом и попробуй обратить внимание
-        на форму клетки, ядро и характерные морфологические признаки
-        в следующем вопросе.
-      </div>
-    {% endif %}
-
-    <div class="feedback-footer">
-      <div class="feedback-meta">
-        <strong>Режим:</strong>
-        {% if session.mode == "level" %}
-          level test
-        {% else %}
-          {{ session.mode }}
-        {% endif %}
-      </div>
-
-      <div class="feedback-meta">
-        <strong>Статус:</strong>
-        {% if answer.is_correct %}
-          ответ засчитан как верный
-        {% else %}
-          ответ засчитан как неверный
-        {% endif %}
-      </div>
-
-      <button
-        type="button"
-        class="btn btn--primary feedback-continue"
-        hx-get="{% url 'test_question_partial' session.id %}"
-        hx-target="#test-container"
-        hx-swap="outerHTML"
-      >
-        Continue
-      </button>
-    </div>
-
-  </div>
 </div>
-
-<style>
-  .feedback-card {
-    width: 100%;
-    max-width: 920px;
-    margin: 0 auto;
-    background: #ffffff;
-    border: 1px solid #dbe4ef;
-    border-radius: 22px;
-    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
-    overflow: hidden;
-  }
-
-  .feedback-header {
-    display: grid;
-    grid-template-columns: 52px 1fr auto;
-    gap: 16px;
-    align-items: start;
-    padding: 28px 30px;
-  }
-
-  .feedback-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 26px;
-    line-height: 1;
-  }
-
-  .feedback-icon--success {
-    color: #16a34a;
-    background: #dcfce7;
-    border: 1px solid #86efac;
-  }
-
-  .feedback-icon--error {
-    color: #dc2626;
-    background: #fee2e2;
-    border: 1px solid #fca5a5;
-  }
-
-  .feedback-subtitle {
-    margin-bottom: 4px;
-    font-size: 13px;
-    font-weight: 700;
-    color: #64748b;
-  }
-
-  .feedback-title {
-    margin: 0;
-    color: #020617;
-    font-size: 28px;
-    line-height: 1.1;
-    font-weight: 800;
-  }
-
-  .feedback-description {
-    margin: 8px 0 0;
-    color: #64748b;
-    font-size: 15px;
-  }
-
-  .feedback-status {
-    padding: 9px 16px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 800;
-  }
-
-  .feedback-status--success {
-    color: #16a34a;
-    background: #dcfce7;
-    border: 1px solid #86efac;
-  }
-
-  .feedback-status--error {
-    color: #dc2626;
-    background: #fee2e2;
-    border: 1px solid #fca5a5;
-  }
-
-  .feedback-divider {
-    height: 1px;
-    background: #e2e8f0;
-  }
-
-  .feedback-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
-    padding: 26px 30px 16px;
-  }
-
-  .feedback-box {
-    min-height: 86px;
-    padding: 18px 20px;
-    border: 1px solid #cbd5e1;
-    border-radius: 16px;
-    background: #f8fafc;
-  }
-
-  .feedback-label {
-    margin-bottom: 8px;
-    color: #64748b;
-    font-size: 13px;
-    font-weight: 800;
-  }
-
-  .feedback-box strong {
-    color: #020617;
-    font-size: 20px;
-  }
-
-  .feedback-image {
-    width: 100%;
-    max-height: 260px;
-    object-fit: contain;
-    display: block;
-    border-radius: 14px;
-    background: #ffffff;
-  }
-
-  .feedback-message {
-    margin: 0 30px 24px;
-    padding: 18px 20px;
-    border-radius: 16px;
-    font-size: 15px;
-    line-height: 1.6;
-  }
-
-  .feedback-message--success {
-    color: #166534;
-    background: #ecfdf5;
-    border: 1px solid #86efac;
-  }
-
-  .feedback-message--error {
-    color: #991b1b;
-    background: #fef2f2;
-    border: 1px solid #fca5a5;
-  }
-
-  .feedback-footer {
-    display: grid;
-    grid-template-columns: 1fr 1fr auto;
-    gap: 16px;
-    align-items: center;
-    padding: 0 30px 28px;
-  }
-
-  .feedback-meta {
-    color: #64748b;
-    font-size: 14px;
-  }
-
-  .feedback-meta strong {
-    color: #020617;
-  }
-
-  .feedback-continue {
-    min-width: 150px;
-  }
-
-  @media (max-width: 768px) {
-    .feedback-header {
-      grid-template-columns: 44px 1fr;
-    }
-
-    .feedback-status {
-      grid-column: 1 / -1;
-      width: fit-content;
-    }
-
-    .feedback-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .feedback-footer {
-      grid-template-columns: 1fr;
-    }
-
-    .feedback-continue {
-      width: 100%;
-    }
-  }
-</style>

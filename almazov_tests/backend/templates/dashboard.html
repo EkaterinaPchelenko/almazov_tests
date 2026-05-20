@@ -6,9 +6,9 @@
 <section class="card card--soft" style="padding: 32px; margin-bottom: 24px;">
     <div style="display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; align-items: center;">
         <div>
-            <h1 class="section-title" style="font-size: 36px;">Welcome back, {{ request.user.username }}!</h1>
+            <h1 class="section-title" style="font-size: 36px;">Добро пожаловать, {{ request.user.username }}!</h1>
             <p class="section-text" style="margin-top: 12px;">
-                Continue your learning journey and master cell identification.
+                Продолжайте свой путь обучения и осваивайте идентификацию клеток.
             </p>
         </div>
     </div>
@@ -18,52 +18,52 @@
     <a href="{% url 'start_test' 'random' %}" class="card" style="padding: 28px; display: block;">
         <div class="stat-card__value" style="font-size: 28px;">Random Test</div>
         <div class="section-text" style="margin-top: 10px;">
-            Take a test with randomly selected questions from the entire question bank.
+            Пройдите тест со случайно выбранными вопросами из всего банка вопросов.
         </div>
     </a>
 
     <a href="{% url 'start_test' 'trainer' %}" class="card" style="padding: 28px; display: block; border: 2px solid #2f6df6;">
         <div class="stat-card__value" style="font-size: 28px;">Adaptive Test</div>
         <div class="section-text" style="margin-top: 10px;">
-            Personalized test generated using collaborative filtering based on your performance.
+            Персонализированный тренировочный тест, созданный на основе Ваших зон роста.
         </div>
     </a>
 
     <a href="{% url 'levels_page' %}" class="card" style="padding: 28px; display: block; border: 2px solid #19b35b;">
         <div class="stat-card__value" style="font-size: 28px;">Level-Based Tests</div>
         <div class="section-text" style="margin-top: 10px;">
-            Progress through levels of increasing difficulty. Complete each level 5 times to unlock the next.
+            Проходите уровни с возрастающей сложностью. Пройдите каждый уровень 5 раз, чтобы открыть следующий.
         </div>
     </a>
 </section>
 
 <section class="card" style="padding: 20px; margin-bottom: 24px; text-align: center;">
-    <div style="font-size: 20px; font-weight: 700;">View Detailed Analytics</div>
+    <div style="font-size: 20px; font-weight: 700;">Просмотр подробной аналитики</div>
 </section>
 
 <section class="grid-3" style="margin-bottom: 24px;">
     <article class="stat-card">
-        <div class="stat-card__label">Average Accuracy</div>
+        <div class="stat-card__label">Средняя точность</div>
         <div class="stat-card__value">{{ average_accuracy }}%</div>
-        <div class="stat-card__hint">Based on all answered questions</div>
+        <div class="stat-card__hint">На основе всех полученных ответах на вопросы</div>
     </article>
 
     <article class="stat-card">
-        <div class="stat-card__label">Tests Completed</div>
+        <div class="stat-card__label">Тестов пройдено</div>
         <div class="stat-card__value">{{ tests_completed }}</div>
-        <div class="stat-card__hint">All finished sessions</div>
+        <div class="stat-card__hint">Все завершённые сеансы</div>
     </article>
 
     <article class="stat-card">
         <div class="stat-card__label">Study Streak</div>
-        <div class="stat-card__value">{{ study_streak_days }} days</div>
-        <div class="stat-card__hint">Keep it up!</div>
+        <div class="stat-card__value">{{ study_streak_days }} дней</div>
+        <div class="stat-card__hint">Так держать!</div>
     </article>
 </section>
 
 <section class="grid-2">
     <div class="card" style="padding: 24px;">
-        <h2 style="margin: 0 0 20px; font-size: 28px; font-weight: 800;">Recent Tests</h2>
+        <h2 style="margin: 0 0 20px; font-size: 28px; font-weight: 800;">Недавние тесты</h2>
 
         <div style="display: grid; gap: 16px;">
             {% for session in recent_sessions %}
@@ -96,19 +96,19 @@
                 </div>
             {% empty %}
                 <div class="stat-card">
-                    <div class="stat-card__hint">No completed tests yet.</div>
+                    <div class="stat-card__hint">Ещё нет завершённых тестов.</div>
                 </div>
             {% endfor %}
         </div>
     </div>
 
     <div class="card" style="padding: 24px;">
-        <h2 style="margin: 0 0 20px; font-size: 28px; font-weight: 800;">Learning Progress</h2>
+        <h2 style="margin: 0 0 20px; font-size: 28px; font-weight: 800;">Прогресс изучения</h2>
 
         <div style="display: grid; gap: 18px;">
             <div>
                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <span class="section-text">Mastered Cells</span>
+                    <span class="section-text">Освоенные клетки</span>
                     <strong>{{ mastered_count }}</strong>
                 </div>
                 <div class="progress"><div class="progress__bar" style="width: {% if mastered_count %}100{% else %}0{% endif %}%;"></div></div>
@@ -116,7 +116,7 @@
 
             <div>
                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <span class="section-text">In Progress</span>
+                    <span class="section-text">В процессе</span>
                     <strong>{{ in_progress_count }}</strong>
                 </div>
                 <div class="progress"><div class="progress__bar" style="width: {% if in_progress_count %}100{% else %}0{% endif %}%;"></div></div>
@@ -124,18 +124,18 @@
 
             <div>
                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <span class="section-text">Needs Revision</span>
+                    <span class="section-text">Нужно повторить</span>
                     <strong>{{ revision_count }}</strong>
                 </div>
                 <div class="progress"><div class="progress__bar" style="width: {% if revision_count %}100{% else %}0{% endif %}%;"></div></div>
             </div>
 
             <div class="section-text" style="margin-top: 8px;">
-                Focus on reviewing cells marked for revision to improve your accuracy.
+                Сосредоточьтесь на просмотре ячеек, помеченных для доработки, чтобы повысить точность.
             </div>
 
             <a href="{% url 'start_test' 'trainer' %}" class="btn btn--secondary btn--full">
-                Review Weak Areas
+                Прокачать зоны роста
             </a>
         </div>
     </div>

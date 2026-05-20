@@ -32,9 +32,6 @@ class EmailOrUsernameBackend:
         except User.DoesNotExist:
             return None
 
-    def self_user_model(self):
-        return User
-
     def user_can_authenticate(self, user):
         is_active = getattr(user, "is_active", None)
         return is_active or is_active is None

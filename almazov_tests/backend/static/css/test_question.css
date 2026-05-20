@@ -1,0 +1,152 @@
+.test-progress {
+    margin-bottom: 16px;
+}
+
+.test-timer {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 18px;
+}
+
+.result-box {
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    border-radius: 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    font-weight: 600;
+}
+
+.matching-hint {
+    margin-bottom: 14px;
+    color: #475569;
+}
+
+.matching-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.match-container {
+    display: grid;
+    grid-template-columns: 360px 460px;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.match-container.results {
+    grid-template-columns: 1fr;
+    gap: 14px;
+}
+
+.match-column {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.match-column:first-child {
+    justify-content: center;
+}
+
+.match-item {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    padding: 14px;
+    border: 2px solid #e5e7eb;
+    border-radius: 14px;
+    background: white;
+    cursor: pointer;
+}
+
+.match-item:hover {
+    border-color: #93c5fd;
+}
+
+.match-item.selected {
+    border-color: #2563eb;
+    background: #dbeafe;
+}
+
+.match-item.matched {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+
+.match-item img,
+.match-image img,
+.question-image img,
+.image-option img {
+    max-width: 100%;
+    border-radius: 12px;
+    display: block;
+}
+
+.match-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    align-items: center;
+    padding: 14px;
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+}
+
+.match-pair.correct {
+    border-color: #22c55e;
+    background: #dcfce7;
+}
+
+.match-pair.wrong {
+    border-color: #ef4444;
+    background: #fee2e2;
+}
+
+.match-name {
+    font-weight: 600;
+}
+
+.answer-options,
+.image-options {
+    display: grid;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.answer-option,
+.image-option {
+    padding: 14px;
+    border: 2px solid #e5e7eb;
+    border-radius: 14px;
+    background: white;
+    cursor: pointer;
+}
+
+.image-options {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.image-choice {
+    padding: 10px;
+}
+
+.image-choice img {
+    width: 100%;
+    max-height: 360px;
+    object-fit: cover;
+}
+
+#matching-lines {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 1;
+}

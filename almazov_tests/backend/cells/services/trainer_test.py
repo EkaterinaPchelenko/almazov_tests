@@ -2,8 +2,6 @@ import math
 import random
 from collections import defaultdict
 
-from django.db.models import F
-
 from cells.models import (
     CellImage,
     ImageSimilarity,
@@ -77,7 +75,6 @@ def generate_trainer_images(user, limit: int = 10):
     )
 
     all_images = list(CellImage.objects.select_related("cell").all())
-    seen_in_scoring = set()
     scored = []
 
     for image in all_images:
@@ -92,7 +89,6 @@ def generate_trainer_images(user, limit: int = 10):
         )
 
         if score > 0:
-            seen_in_scoring.add(image.id)
             source = TestSessionImage.Source.PERSONAL_ERROR if personal >= similarity else TestSessionImage.Source.SIMILAR
             if novelty == 1.0 and personal == 0 and similarity == 0:
                 source = TestSessionImage.Source.NOVEL

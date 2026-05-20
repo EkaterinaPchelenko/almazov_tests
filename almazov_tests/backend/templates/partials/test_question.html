@@ -1,509 +1,149 @@
 <div id="test-container">
-  <div style="margin-bottom: 16px;">
-    <div class="progress">
-      <div class="progress__bar" style="width: {{ percent }}%;"></div>
+    <div class="test-progress">
+        <div class="progress">
+            <div class="progress__bar" style="width: {{ percent }}%;"></div>
+        </div>
     </div>
-  </div>
-  <div
-      id="test-timer"
-      data-started-at="{{ session.started_at|date:'c' }}"
-      style="font-size: 20px; font-weight: 700;"
-  >
-      00:00
-  </div>
 
-  {% if question.type == "matching" %}
-
-    {% if show_matching_result %}
-      <div class="result-box">
-        <strong>Результат:</strong>
-        {{ matching_correct }} из {{ matching_total }}
-        — {{ matching_percent }}%
-      </div>
-
-      <div class="match-container results">
-        {% for pair in matching_pairs %}
-          <div class="match-pair {% if pair.is_correct %}correct{% else %}wrong{% endif %}">
-            <div class="match-name">
-              {{ pair.cell.name }}
-            </div>
-
-            <div class="match-image">
-              <img src="{{ pair.selected_image.image.url }}" alt="{{ pair.cell.name }}">
-            </div>
-          </div>
-        {% endfor %}
-      </div>
-
-      <button
-        type="button"
-        class="btn btn--primary"
-        hx-get="{% url 'test_question_partial' session.id %}"
-        hx-target="#test-container"
-        hx-swap="outerHTML"
-      >
-        Следующий вопрос
-      </button>
-
-    {% else %}
-
-      <form
-          id="matching-form"
-          hx-post="{% url 'submit_answer_htmx' session.id %}"
-          hx-target="#test-container"
-          hx-swap="outerHTML"
-          hx-on::before-request="document.getElementById('matching-answer').value = JSON.stringify(window.matchingPairs || {})"
-        >
-          {% csrf_token %}
-
-          <div class="matching-hint">
-            Выберите название клетки слева, затем подходящее изображение справа.
-          </div>
-
-          <div class="matching-wrapper">
-          <svg id="matching-lines"></svg>
-
-          <div class="match-container">
-            <div class="match-column">
-              {% for pair in question.pairs %}
-                <button
-                  type="button"
-                  class="match-item"
-                  id="cell-{{ pair.cell_id }}"
-                  data-cell="{{ pair.cell_id }}"
-                  onclick="selectCell(this)"
-                >
-                  {{ pair.cell_name }}
-                </button>
-              {% endfor %}
-            </div>
-
-            <div class="match-column">
-              {% for img in question.images %}
-                <button
-                  type="button"
-                  class="match-item image-choice"
-                  id="image-{{ img.image_id }}"
-                  data-image="{{ img.image_id }}"
-                  onclick="selectImage(this)"
-                >
-                  <img src="{{ img.image_url }}" alt="">
-                </button>
-              {% endfor %}
-            </div>
-          </div>
-          </div>
-
-          <input type="hidden" name="answer" id="matching-answer">
-
-          <button type="submit" class="btn btn--primary">
-            Submit matching
-          </button>
-        </form>
-
-    {% endif %}
-
-  {% else %}
-
-    <form
-      hx-post="{% url 'submit_answer_htmx' session.id %}"
-      hx-target="#test-container"
-      hx-swap="outerHTML"
+    <div
+        id="test-timer"
+        class="test-timer"
+        data-started-at="{{ session.started_at|date:'c' }}"
     >
-      {% csrf_token %}
+        00:00
+    </div>
 
-      {% if question.type == "image_to_name" %}
-        <h3 class="question-title">
-          Выберите название клетки изображённой на рисунке
-        </h3>
-        <div class="question-image">
-          <img src="{{ question.image.image.url }}" alt="">
-        </div>
+    {% if question.type == "matching" %}
+        {% if show_matching_result %}
+            <div class="result-box">
+                <strong>Результат:</strong>
+                {{ matching_correct }} из {{ matching_total }} — {{ matching_percent }}%
+            </div>
 
-        <div class="answer-options">
-          {% for option in question.options %}
+            <div class="match-container results">
+                {% for pair in matching_pairs %}
+                    <div class="match-pair {% if pair.is_correct %}correct{% else %}wrong{% endif %}">
+                        <div class="match-name">
+                            {{ pair.cell.name }}
+                        </div>
+
+                        <div class="match-image">
+                            <img src="{{ pair.selected_image.image.url }}" alt="{{ pair.cell.name }}">
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
             <button
-              type="submit"
-              name="answer"
-              value="{{ option }}"
-              class="answer-option"
+                type="button"
+                class="btn btn--primary"
+                hx-get="{% url 'test_question_partial' session.id %}"
+                hx-target="#test-container"
+                hx-swap="outerHTML"
             >
-              {{ option }}
+                Следующий вопрос
             </button>
-          {% endfor %}
-        </div>
-      {% endif %}
-
-      {% if question.type == "name_to_image" %}
-        <h3 class="question-title">
-          Выберите изображение клетки: {{ question.cell_name }}
-        </h3>
-
-        <div class="image-options">
-          {% for option in question.options %}
-            <button
-              type="submit"
-              name="answer"
-              value="{{ option.id }}"
-              class="image-option"
+        {% else %}
+            <form
+                id="matching-form"
+                hx-post="{% url 'submit_answer_htmx' session.id %}"
+                hx-target="#test-container"
+                hx-swap="outerHTML"
             >
-              <img src="{{ option.image.url }}" alt="">
-            </button>
-          {% endfor %}
-        </div>
-      {% endif %}
-    </form>
+                {% csrf_token %}
 
-  {% endif %}
+                <div class="matching-hint">
+                    Выберите название клетки слева, затем подходящее изображение справа.
+                </div>
+
+                <div class="matching-wrapper">
+                    <svg id="matching-lines"></svg>
+
+                    <div class="match-container">
+                        <div class="match-column">
+                            {% for pair in question.pairs %}
+                                <button
+                                    type="button"
+                                    class="match-item"
+                                    id="cell-{{ pair.cell_id }}"
+                                    data-cell="{{ pair.cell_id }}"
+                                >
+                                    {{ pair.cell_name }}
+                                </button>
+                            {% endfor %}
+                        </div>
+
+                        <div class="match-column">
+                            {% for img in question.images %}
+                                <button
+                                    type="button"
+                                    class="match-item image-choice"
+                                    id="image-{{ img.image_id }}"
+                                    data-image="{{ img.image_id }}"
+                                >
+                                    <img src="{{ img.image_url }}" alt="">
+                                </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <input type="hidden" name="answer" id="matching-answer">
+
+                <button type="submit" class="btn btn--primary">
+                    Ответить
+                </button>
+            </form>
+        {% endif %}
+    {% else %}
+        <form
+            hx-post="{% url 'submit_answer_htmx' session.id %}"
+            hx-target="#test-container"
+            hx-swap="outerHTML"
+        >
+            {% csrf_token %}
+
+            {% if question.type == "image_to_name" %}
+                <h3 class="question-title">
+                    Выберите название клетки, изображённой на рисунке
+                </h3>
+
+                <div class="question-image">
+                    <img src="{{ question.image.image.url }}" alt="">
+                </div>
+
+                <div class="answer-options">
+                    {% for option in question.options %}
+                        <button
+                            type="submit"
+                            name="answer"
+                            value="{{ option }}"
+                            class="answer-option"
+                        >
+                            {{ option }}
+                        </button>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if question.type == "name_to_image" %}
+                <h3 class="question-title">
+                    Выберите изображение клетки: {{ question.cell_name }}
+                </h3>
+
+                <div class="image-options">
+                    {% for option in question.options %}
+                        <button
+                            type="submit"
+                            name="answer"
+                            value="{{ option.id }}"
+                            class="image-option"
+                        >
+                            <img src="{{ option.image.url }}" alt="">
+                        </button>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </form>
+    {% endif %}
 </div>
-
-<style>
-    .result-box {
-    padding: 14px 16px;
-    margin-bottom: 18px;
-    border-radius: 14px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    font-weight: 600;
-    }
-
-    .matching-hint {
-    margin-bottom: 14px;
-    color: #475569;
-    }
-
-    .match-container {
-      display: grid;
-      grid-template-columns: 320px 420px;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-      margin-bottom: 20px;
-    }
-
-    .match-column {
-      display: flex;
-      flex-direction: column;
-      gap: 22px;
-    }
-
-    .match-column:first-child {
-      justify-content: center;
-    }
-
-    .matching-wrapper {
-      position: relative;
-      width: 100%;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .match-item {
-      position: relative;
-      z-index: 3;
-      width: 100%;
-    }
-
-    .match-item:hover {
-    border-color: #93c5fd;
-    }
-
-    .match-item.selected {
-    border-color: #2563eb;
-    background: #dbeafe;
-    }
-
-    .match-item.matched {
-    border-color: #64748b;
-    background: #f1f5f9;
-    }
-
-    .match-item img,
-    .match-image img,
-    .question-image img,
-    .image-option img {
-    max-width: 100%;
-    border-radius: 12px;
-    display: block;
-    }
-
-    .match-pair {
-    grid-column: span 2;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    align-items: center;
-    padding: 14px;
-    border: 2px solid #e5e7eb;
-    border-radius: 16px;
-    }
-
-    .match-pair.correct {
-    border-color: #22c55e;
-    background: #dcfce7;
-    }
-
-    .match-pair.wrong {
-    border-color: #ef4444;
-    background: #fee2e2;
-    }
-
-    .match-name {
-    font-weight: 600;
-    }
-
-    .answer-options,
-    .image-options {
-    display: grid;
-    gap: 12px;
-    margin-top: 18px;
-    }
-
-    .answer-option,
-    .image-option {
-    padding: 14px;
-    border: 2px solid #e5e7eb;
-    border-radius: 14px;
-    background: white;
-    cursor: pointer;
-    }
-
-    .image-options {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    }
-    .match-item {
-      position: relative;
-    }
-
-    .match-item.matched {
-      border-color: #2563eb;
-      background: #eff6ff;
-    }
-
-    .match-badge {
-      display: block;
-      margin-top: 6px;
-      font-size: 12px;
-      color: #2563eb;
-      font-weight: 600;
-    }
-
-    .image-choice {
-      padding: 10px;
-    }
-
-    .image-choice img {
-      width: 100%;
-      max-height: 360px;
-      object-fit: cover;
-    }
-
-    .image-choice.matched {
-      border-color: #2563eb;
-      background: #eff6ff;
-    }
-
-    .image-match-badge {
-      margin-top: 8px;
-      padding: 6px 8px;
-      border-radius: 8px;
-      background: #dbeafe;
-      color: #1d4ed8;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    #matching-lines {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      overflow: visible;
-      z-index: 1;
-    }
-
-    .match-container {
-      display: grid;
-      grid-template-columns: 360px 460px;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .match-item {
-      position: relative;
-      z-index: 3;
-    }
-
-    .match-item.selected {
-      border-color: #2563eb;
-      background: #dbeafe;
-    }
-
-    .match-item.matched {
-      border-color: #2563eb;
-      background: #eff6ff;
-    }
-</style>
-
-<script>
-  window.selectedMatchingCell = null;
-  window.matchingPairs = {};
-
-  function selectCell(button) {
-    window.selectedMatchingCell = button.dataset.cell;
-
-    document.querySelectorAll("[data-cell]").forEach((item) => {
-      item.classList.remove("selected");
-    });
-
-    button.classList.add("selected");
-  }
-
-  function selectImage(button) {
-    if (!window.selectedMatchingCell) {
-      alert("Сначала выберите клетку");
-      return;
-    }
-
-    const cellId = window.selectedMatchingCell;
-    const imageId = button.dataset.image;
-
-    // Удаляем старую связь у картинки
-    Object.keys(window.matchingPairs).forEach((existingCellId) => {
-      if (window.matchingPairs[existingCellId] === imageId) {
-        delete window.matchingPairs[existingCellId];
-      }
-    });
-
-    // Создаём новую связь
-    window.matchingPairs[cellId] = imageId;
-
-    window.selectedMatchingCell = null;
-
-    redrawMatchingState();
-    drawLines();
-  }
-
-  function redrawMatchingState() {
-    document.querySelectorAll("[data-cell]").forEach((item) => {
-      item.classList.remove("selected", "matched");
-    });
-
-    document.querySelectorAll("[data-image]").forEach((item) => {
-      item.classList.remove("matched");
-    });
-
-    Object.entries(window.matchingPairs).forEach(([cellId, imageId]) => {
-      const cell = document.getElementById(`cell-${cellId}`);
-      const image = document.getElementById(`image-${imageId}`);
-
-      if (cell) {
-        cell.classList.add("matched");
-      }
-
-      if (image) {
-        image.classList.add("matched");
-      }
-    });
-  }
-
-  function drawLines() {
-    const svg = document.getElementById("matching-lines");
-
-    if (!svg) return;
-
-    svg.innerHTML = "";
-
-    const wrapper = document.querySelector(".matching-wrapper");
-    const wrapperRect = wrapper.getBoundingClientRect();
-
-    Object.entries(window.matchingPairs).forEach(([cellId, imageId]) => {
-      const cell = document.getElementById(`cell-${cellId}`);
-      const image = document.getElementById(`image-${imageId}`);
-
-      if (!cell || !image) return;
-
-      const cellRect = cell.getBoundingClientRect();
-      const imageRect = image.getBoundingClientRect();
-
-      const x1 = cellRect.right - wrapperRect.left;
-      const y1 = cellRect.top + cellRect.height / 2 - wrapperRect.top;
-
-      const x2 = imageRect.left - wrapperRect.left;
-      const y2 = imageRect.top + imageRect.height / 2 - wrapperRect.top;
-
-      const path = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "path"
-      );
-      const curve = 70;
-
-      const d = `
-        M ${x1} ${y1}
-        C ${x1 + curve} ${y1},
-          ${x2 - curve} ${y2},
-          ${x2} ${y2}
-      `;
-
-      path.setAttribute("d", d);
-
-      path.setAttribute("stroke", "#2563eb");
-      path.setAttribute("stroke-width", "4");
-      path.setAttribute("fill", "none");
-      path.setAttribute("stroke-linecap", "round");
-
-      svg.appendChild(path);
-    });
-  }
-
-  window.addEventListener("resize", drawLines);
-
-  document.body.addEventListener("htmx:configRequest", function (event) {
-    const form = event.target;
-
-    if (!form || form.id !== "matching-form") {
-      return;
-    }
-
-    const answer = JSON.stringify(window.matchingPairs || {});
-
-    event.detail.parameters["answer"] = answer;
-
-    const input = document.getElementById("matching-answer");
-
-    if (input) {
-      input.value = answer;
-    }
-  });
-
-(function () {
-    const timer = document.getElementById("test-timer");
-    if (!timer) return;
-
-    const startedAt = new Date(timer.dataset.startedAt);
-
-    function pad(value) {
-        return String(value).padStart(2, "0");
-    }
-
-    function renderTimer() {
-        const diffSeconds = Math.max(
-            Math.floor((new Date() - startedAt) / 1000),
-            0
-        );
-
-        const hours = Math.floor(diffSeconds / 3600);
-        const minutes = Math.floor((diffSeconds % 3600) / 60);
-        const seconds = diffSeconds % 60;
-
-        timer.textContent = hours > 0
-            ? `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
-            : `${pad(minutes)}:${pad(seconds)}`;
-    }
-
-    renderTimer();
-    setInterval(renderTimer, 1000);
-})();
-
-</script>

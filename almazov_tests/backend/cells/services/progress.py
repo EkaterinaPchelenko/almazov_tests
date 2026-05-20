@@ -5,7 +5,6 @@ import json
 from cells.models import (
     GlobalImageStats,
     TestSession,
-    TestSessionImage,
     UserImageAnswer,
     UserImagePerformance,
 )
