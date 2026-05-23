@@ -39,6 +39,22 @@
 
           <div class="auth-grid">
             <div class="auth-field">
+              <label class="auth-label" for="{{ form.last_name.id_for_label }}">Фамилия</label>
+              {{ form.last_name }}
+              {% if form.last_name.errors %}
+                <div class="auth-errors">{{ form.last_name.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="auth-field">
+              <label class="auth-label" for="{{ form.first_name.id_for_label }}">Имя</label>
+              {{ form.first_name }}
+              {% if form.first_name.errors %}
+                <div class="auth-errors">{{ form.first_name.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="auth-field">
               <label class="auth-label" for="{{ form.username.id_for_label }}">Username</label>
               {{ form.username }}
               {% if form.username.errors %}
@@ -53,14 +69,13 @@
                 <div class="auth-errors">{{ form.email.errors }}</div>
               {% endif %}
             </div>
-            <div>
-                <label>Группа</label>
-                {{ form.group }}
-                {% if form.group.errors %}
-                    <div class="form-errors">
-                        {{ form.group.errors }}
-                    </div>
-                {% endif %}
+
+            <div class="auth-field auth-field--full">
+              <label class="auth-label" for="{{ form.group.id_for_label }}">Группа</label>
+              {{ form.group }}
+              {% if form.group.errors %}
+                <div class="auth-errors">{{ form.group.errors }}</div>
+              {% endif %}
             </div>
 
             <div class="auth-field auth-field--full">
