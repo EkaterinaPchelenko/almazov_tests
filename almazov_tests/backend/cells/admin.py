@@ -13,7 +13,7 @@ from .models import (
     DiagnosticCaseSession,
     DiagnosticFinding,
     GlobalImageStats,
-    ImageSimilarity,
+    CellSimilarity,
     Level,
     LevelCell,
     TestSession,
@@ -134,11 +134,18 @@ class DiagnosticCaseFindingAnswerAdmin(admin.ModelAdmin):
     autocomplete_fields = ("finding",)
 
 
+@admin.register(CellSimilarity)
+class CellSimilarityAdmin(admin.ModelAdmin):
+    list_display = ("source_cell", "target_cell", "weight")
+    list_filter = ("source_cell", "target_cell")
+    search_fields = ("source_cell__name", "target_cell__name")
+    autocomplete_fields = ("source_cell", "target_cell")
+
+
 admin.site.register(LevelCell)
 admin.site.register(CellImage)
 admin.site.register(TestSession)
 admin.site.register(TestSessionImage)
 admin.site.register(UserImageAnswer)
 admin.site.register(UserImagePerformance)
-admin.site.register(ImageSimilarity)
 admin.site.register(GlobalImageStats)

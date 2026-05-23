@@ -252,37 +252,6 @@ class UserImagePerformance(models.Model):
         return self.wrong_attempts / self.total_attempts
 
 
-class ImageSimilarity(models.Model):
-    image_from = models.ForeignKey(
-        CellImage,
-        on_delete=models.CASCADE,
-        related_name="similarity_from",
-    )
-    image_to = models.ForeignKey(
-        CellImage,
-        on_delete=models.CASCADE,
-        related_name="similarity_to",
-    )
-    similarity_score = models.FloatField(default=0)
-    common_users_count = models.PositiveIntegerField(default=0)
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["image_from", "image_to"],
-                name="uq_image_similarity_pair",
-            ),
-            models.CheckConstraint(
-                check=~models.Q(image_from=models.F("image_to")),
-                name="chk_similarity_not_self",
-            ),
-        ]
-        indexes = [
-            models.Index(fields=["image_from", "similarity_score"]),
-            models.Index(fields=["image_to"]),
-        ]
-
-
 class GlobalImageStats(models.Model):
     image = models.OneToOneField(
         CellImage,
@@ -506,3 +475,25 @@ class DiagnosticCaseFindingAnswer(models.Model):
 
     def __str__(self):
         return f"{self.session} — {self.finding.title}: {self.selected_count}"
+
+
+class CellSimilarity(models.Model):
+    source_cell = models.ForeignKey(
+        Cell,
+        on_delete=models.CASCADE,
+        related_name="similar_cells_from",
+    )
+    target_cell = models.ForeignKey(
+        Cell,
+        on_delete=models.CASCADE,
+        related_name="similar_cells_to",
+    )
+    weight = models.FloatField(default=1.0)
+
+    class Meta:
+        unique_together = ("source_cell", "target_cell")
+        verbose_name = "Похожесть клеток"
+        verbose_name_plural = "Похожесть клеток"
+
+    def __str__(self):
+        return f"{self.source_cell} → {self.target_cell} ({self.weight})"
