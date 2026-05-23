@@ -45,6 +45,63 @@
     </div>
 </section>
 
+<section class="card card--soft hardest-cells-section">
+    <div class="hardest-cells-header">
+        <div>
+            <h2 class="section-title">Топ-3 самых сложных клеток</h2>
+            <p class="section-text">
+                Клетки, по которым у студента самый высокий процент ошибок.
+            </p>
+        </div>
+    </div>
+
+    {% if hardest_cells %}
+        <div class="hardest-cells-grid">
+            {% for item in hardest_cells %}
+                <div class="hardest-cell-card">
+                    <div class="hardest-cell-rank">#{{ forloop.counter }}</div>
+
+                    <div class="hardest-cell-main">
+                        <h3 class="hardest-cell-title">{{ item.cell.name }}</h3>
+
+                        {% if item.cell.latin_name %}
+                            <p class="hardest-cell-subtitle">{{ item.cell.latin_name }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="hardest-cell-error">
+                        {{ item.error_percent }}%
+                        <span>ошибок</span>
+                    </div>
+
+                    <div class="hardest-cell-stats">
+                        <div>
+                            <strong>{{ item.total_attempts }}</strong>
+                            <span>попыток</span>
+                        </div>
+                        <div>
+                            <strong>{{ item.correct_attempts }}</strong>
+                            <span>верно</span>
+                        </div>
+                        <div>
+                            <strong>{{ item.wrong_attempts }}</strong>
+                            <span>ошибок</span>
+                        </div>
+                        <div>
+                            <strong>{{ item.accuracy_percent }}%</strong>
+                            <span>точность</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="empty-text">
+            Пока нет данных по ошибкам студента.
+        </p>
+    {% endif %}
+</section>
+
 <section class="card" style="padding: 24px; margin-bottom: 24px;">
     <h2 class="section-title" style="margin-bottom: 18px;">Прогресс по уровням</h2>
 

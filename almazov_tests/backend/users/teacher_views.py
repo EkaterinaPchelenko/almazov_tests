@@ -10,6 +10,7 @@ from cells.models import (
     DiagnosticCaseProgress,
     Level,
     UserLevelProgress,
+    UserImagePerformance,
 )
 from .models import StudentGroup, StudentProfile, User
 
@@ -283,6 +284,62 @@ def teacher_student_detail(request, student_id):
         ]
         average_accuracy = round(sum(accuracies) / len(accuracies), 1) if accuracies else 0
 
+    cell_difficulty_map = {}
+
+    performances = (
+        UserImagePerformance.objects
+        .filter(user=student, total_attempts__gt=0)
+        .select_related("image__cell")
+    )
+
+    for performance in performances:
+        cell = performance.image.cell
+
+        if cell.id not in cell_difficulty_map:
+            cell_difficulty_map[cell.id] = {
+                "cell": cell,
+                "total_attempts": 0,
+                "correct_attempts": 0,
+                "wrong_attempts": 0,
+            }
+
+        cell_difficulty_map[cell.id]["total_attempts"] += performance.total_attempts
+        cell_difficulty_map[cell.id]["correct_attempts"] += performance.correct_attempts
+        cell_difficulty_map[cell.id]["wrong_attempts"] += performance.wrong_attempts
+
+    hardest_cells = []
+
+    for item in cell_difficulty_map.values():
+        total_attempts = item["total_attempts"]
+        wrong_attempts = item["wrong_attempts"]
+        correct_attempts = item["correct_attempts"]
+
+        error_percent = 0
+        accuracy_percent = 0
+
+        if total_attempts:
+            error_percent = round(wrong_attempts * 100 / total_attempts, 1)
+            accuracy_percent = round(correct_attempts * 100 / total_attempts, 1)
+
+        hardest_cells.append({
+            "cell": item["cell"],
+            "total_attempts": total_attempts,
+            "correct_attempts": correct_attempts,
+            "wrong_attempts": wrong_attempts,
+            "error_percent": error_percent,
+            "accuracy_percent": accuracy_percent,
+        })
+
+    hardest_cells = sorted(
+        hardest_cells,
+        key=lambda item: (
+            item["error_percent"],
+            item["wrong_attempts"],
+            item["total_attempts"],
+        ),
+        reverse=True,
+    )[:3]
+
     context = {
         "profile": profile,
         "student": student,
@@ -296,7 +353,7 @@ def teacher_student_detail(request, student_id):
         "total_completed_tests": total_completed_tests,
         "tests_100_count": tests_100_count,
         "average_accuracy": average_accuracy,
-
+        "hardest_cells": hardest_cells,
         "total_diagnostic_sessions": diagnostic_sessions.count(),
         "completed_diagnostic_sessions_count": completed_diagnostic_sessions.count(),
     }
