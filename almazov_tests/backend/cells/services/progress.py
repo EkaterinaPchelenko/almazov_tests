@@ -1,17 +1,58 @@
 from django.db import transaction
 from django.utils import timezone
 import json
-
+from datetime import timedelta
 from cells.models import (
     GlobalImageStats,
     TestSession,
     UserImageAnswer,
     UserImagePerformance,
+    DiagnosticCaseSession,
 )
 
 
 def normalize_text(value: str) -> str:
     return value.strip().lower()
+
+
+def calculate_study_streak(user):
+    today = timezone.localdate()
+
+    test_dates = set()
+
+    test_sessions = TestSession.objects.filter(
+        user=user,
+        finished_at__isnull=False,
+    ).values_list("finished_at", flat=True)
+
+    for finished_at in test_sessions:
+        test_dates.add(timezone.localtime(finished_at).date())
+
+    diagnostic_sessions = DiagnosticCaseSession.objects.filter(
+        user=user,
+        finished_at__isnull=False,
+    ).values_list("finished_at", flat=True)
+
+    for finished_at in diagnostic_sessions:
+        test_dates.add(timezone.localtime(finished_at).date())
+
+    if not test_dates:
+        return 0
+
+    if today in test_dates:
+        current_day = today
+    elif today - timedelta(days=1) in test_dates:
+        current_day = today - timedelta(days=1)
+    else:
+        return 0
+
+    streak = 0
+
+    while current_day in test_dates:
+        streak += 1
+        current_day -= timedelta(days=1)
+
+    return streak
 
 
 @transaction.atomic

@@ -4,101 +4,115 @@
 {% block title %}Регистрация | Medical Cell Trainer{% endblock %}
 
 {% block extra_css %}
-  <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
 {% endblock %}
 
 {% block content %}
-<section class="auth-page">
-  <div class="auth-wrap">
-    <div class="auth-brand">
-      <div class="auth-brand__icon">🔬</div>
-      <h1 class="auth-brand__title">Medical Cell Testing System</h1>
-      <p class="auth-brand__subtitle">
-        Adaptive Learning Platform for Medical Students
+<section class="auth-page--single">
+  <div class="auth-reset-card auth-reset-card--register">
+    <div class="auth-reset-head">
+      <div class="auth-reset-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 5v14"></path>
+          <path d="M5 12h14"></path>
+        </svg>
+      </div>
+
+      <h1 class="auth-reset-title">Create Account</h1>
+      <p class="auth-reset-subtitle">
+        Join the adaptive medical cell learning platform
       </p>
     </div>
 
-    <div class="auth-card-v2">
-      <div class="auth-tabs">
-        <a href="{% url 'login' %}" class="auth-tab is-inactive">Login</a>
-        <a href="{% url 'register' %}" class="auth-tab is-active">Register</a>
-      </div>
+    <div class="auth-tabs">
+      <a href="{% url 'login' %}" class="auth-tab is-inactive">Login</a>
+      <a href="{% url 'register' %}" class="auth-tab is-active">Register</a>
+    </div>
 
-      <div class="auth-content">
-        <h2 class="auth-panel-title">Create Account</h2>
-        <p class="auth-panel-subtitle">
-          Зарегистрируйся, чтобы проходить тесты, отслеживать прогресс и использовать adaptive trainer.
-        </p>
+    <div class="auth-content">
+      <h2 class="auth-panel-title">Student Registration</h2>
+      <p class="auth-panel-subtitle">
+        Зарегистрируйся, чтобы проходить тесты, отслеживать прогресс и использовать adaptive trainer.
+      </p>
 
-        <form method="post" class="auth-form">
-          {% csrf_token %}
+      <form method="post" class="auth-form">
+        {% csrf_token %}
 
-          {% if form.non_field_errors %}
-            <div class="auth-errors">{{ form.non_field_errors }}</div>
-          {% endif %}
+        {% if form.non_field_errors %}
+          <div class="auth-errors">{{ form.non_field_errors }}</div>
+        {% endif %}
 
-          <div class="auth-grid">
-            <div class="auth-field">
-              <label class="auth-label" for="{{ form.last_name.id_for_label }}">Фамилия</label>
-              {{ form.last_name }}
-              {% if form.last_name.errors %}
-                <div class="auth-errors">{{ form.last_name.errors }}</div>
-              {% endif %}
-            </div>
+        <div class="auth-grid">
+          <div class="auth-field">
+            <label class="auth-label" for="{{ form.last_name.id_for_label }}">Фамилия</label>
+            {{ form.last_name }}
 
-            <div class="auth-field">
-              <label class="auth-label" for="{{ form.first_name.id_for_label }}">Имя</label>
-              {{ form.first_name }}
-              {% if form.first_name.errors %}
-                <div class="auth-errors">{{ form.first_name.errors }}</div>
-              {% endif %}
-            </div>
+            {% if form.last_name.errors %}
+              <div class="auth-errors">{{ form.last_name.errors }}</div>
+            {% endif %}
+          </div>
 
-            <div class="auth-field">
-              <label class="auth-label" for="{{ form.username.id_for_label }}">Username</label>
-              {{ form.username }}
-              {% if form.username.errors %}
-                <div class="auth-errors">{{ form.username.errors }}</div>
-              {% endif %}
-            </div>
+          <div class="auth-field">
+            <label class="auth-label" for="{{ form.first_name.id_for_label }}">Имя</label>
+            {{ form.first_name }}
 
-            <div class="auth-field">
-              <label class="auth-label" for="{{ form.email.id_for_label }}">Email Address</label>
-              {{ form.email }}
-              {% if form.email.errors %}
-                <div class="auth-errors">{{ form.email.errors }}</div>
-              {% endif %}
-            </div>
+            {% if form.first_name.errors %}
+              <div class="auth-errors">{{ form.first_name.errors }}</div>
+            {% endif %}
+          </div>
 
-            <div class="auth-field auth-field--full">
-              <label class="auth-label" for="{{ form.group.id_for_label }}">Группа</label>
-              {{ form.group }}
-              {% if form.group.errors %}
-                <div class="auth-errors">{{ form.group.errors }}</div>
-              {% endif %}
-            </div>
+          <div class="auth-field">
+            <label class="auth-label" for="{{ form.username.id_for_label }}">Username</label>
+            {{ form.username }}
 
-            <div class="auth-field auth-field--full">
-              <label class="auth-label" for="{{ form.password1.id_for_label }}">Password</label>
-              {{ form.password1 }}
-              {% if form.password1.errors %}
-                <div class="auth-errors">{{ form.password1.errors }}</div>
-              {% endif %}
-              <div class="auth-helper">Используй надёжный пароль длиной не менее 8 символов.</div>
-            </div>
+            {% if form.username.errors %}
+              <div class="auth-errors">{{ form.username.errors }}</div>
+            {% endif %}
+          </div>
 
-            <div class="auth-field auth-field--full">
-              <label class="auth-label" for="{{ form.password2.id_for_label }}">Confirm Password</label>
-              {{ form.password2 }}
-              {% if form.password2.errors %}
-                <div class="auth-errors">{{ form.password2.errors }}</div>
-              {% endif %}
+          <div class="auth-field">
+            <label class="auth-label" for="{{ form.email.id_for_label }}">Email Address</label>
+            {{ form.email }}
+
+            {% if form.email.errors %}
+              <div class="auth-errors">{{ form.email.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="auth-field auth-field--full">
+            <label class="auth-label" for="{{ form.group.id_for_label }}">Группа</label>
+            {{ form.group }}
+
+            {% if form.group.errors %}
+              <div class="auth-errors">{{ form.group.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="auth-field auth-field--full">
+            <label class="auth-label" for="{{ form.password1.id_for_label }}">Password</label>
+            {{ form.password1 }}
+
+            {% if form.password1.errors %}
+              <div class="auth-errors">{{ form.password1.errors }}</div>
+            {% endif %}
+
+            <div class="auth-helper">
+              Используй надёжный пароль длиной не менее 8 символов.
             </div>
           </div>
 
-          <button type="submit" class="auth-submit">Create Account</button>
-        </form>
-      </div>
+          <div class="auth-field auth-field--full">
+            <label class="auth-label" for="{{ form.password2.id_for_label }}">Confirm Password</label>
+            {{ form.password2 }}
+
+            {% if form.password2.errors %}
+              <div class="auth-errors">{{ form.password2.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <button type="submit" class="auth-submit">Create Account</button>
+      </form>
     </div>
 
     <div class="auth-note">

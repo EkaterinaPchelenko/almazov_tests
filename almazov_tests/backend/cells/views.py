@@ -3,7 +3,6 @@ import json
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-
 from .models import (
     Cell,
     CellImage,
@@ -36,7 +35,7 @@ from .services.diagnostic_cases import (
     get_finding_counter_items,
     save_case_finding_answers,
 )
-from .services.progress import save_answer
+from .services.progress import save_answer, calculate_study_streak
 from .services.question_builder import build_question
 from .services.random_test import generate_random_images
 from .services.trainer_test import generate_trainer_images
@@ -63,6 +62,7 @@ def _render_result(request, session):
             "percent": percent_result,
         },
     )
+
 
 @login_required
 def dashboard(request):
@@ -108,7 +108,7 @@ def dashboard(request):
         "in_progress_count": in_progress_count,
         "revision_count": revision_count,
         "level_overview": level_overview,
-        "study_streak_days": 7,
+        "study_streak_days": calculate_study_streak(request.user),
     }
 
     return render(request, "dashboard.html", context)

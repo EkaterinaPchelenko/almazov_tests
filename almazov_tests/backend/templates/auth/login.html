@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+
 {% block title %}Вход | Medical Cell Trainer{% endblock %}
 
 {% block extra_css %}
@@ -7,62 +8,86 @@
 {% endblock %}
 
 {% block content %}
-<section class="auth-page">
-  <div class="auth-wrap">
-    <div class="auth-brand">
-      <div class="auth-brand__icon">🔬</div>
-      <h1 class="auth-brand__title">Medical Cell Testing System</h1>
-      <p class="auth-brand__subtitle">
-        Adaptive Learning Platform for Medical Students
+<section class="auth-page--single">
+  <div class="auth-reset-card auth-reset-card--login">
+    <div class="auth-reset-head">
+      <div class="auth-reset-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M6 21h8"></path>
+
+          <path d="M9 17a4 4 0 0 0 4 4"></path>
+
+          <path d="M10 13l3-3"></path>
+
+          <path d="M12 5l4 4"></path>
+
+          <path d="M14 3l5 5"></path>
+
+          <path d="M8 11l5-5"></path>
+
+          <path d="M7 14l3-3"></path>
+        </svg>
+      </div>
+
+      <h1 class="auth-reset-title">Medical Cell Testing System</h1>
+      <p class="auth-reset-subtitle">
+        Adaptive learning platform for medical students
       </p>
     </div>
 
-    <div class="auth-card-v2">
-      <div class="auth-tabs">
-        <a href="{% url 'login' %}" class="auth-tab is-active">Login</a>
-        <a href="{% url 'register' %}" class="auth-tab is-inactive">Register</a>
-      </div>
+    <div class="auth-tabs">
+      <a href="{% url 'login' %}" class="auth-tab is-active">Login</a>
+      <a href="{% url 'register' %}" class="auth-tab is-inactive">Register</a>
+    </div>
 
-      <div class="auth-content">
-        <h2 class="auth-panel-title">Welcome Back</h2>
-        <p class="auth-panel-subtitle">
-          Войдите, чтобы продолжить обучение, проходить тесты и сохранять результаты.
-        </p>
+    <div class="auth-content">
+      <h2 class="auth-panel-title">Welcome Back</h2>
+      <p class="auth-panel-subtitle">
+        Войдите, чтобы продолжить обучение, проходить тесты и сохранять результаты.
+      </p>
 
-        <form method="post" class="auth-form">
-          {% csrf_token %}
+      <form method="post" class="auth-form">
+        {% csrf_token %}
 
-          {% if form.non_field_errors %}
-            <div class="auth-errors">{{ form.non_field_errors }}</div>
+        {% if form.non_field_errors %}
+          <div class="auth-errors">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="auth-field">
+          <label class="auth-label" for="{{ form.username.id_for_label }}">
+            Email Address or Username
+          </label>
+          {{ form.username }}
+
+          {% if form.username.errors %}
+            <div class="auth-errors">{{ form.username.errors }}</div>
           {% endif %}
+        </div>
 
-          <div class="auth-field">
-            <label class="auth-label" for="{{ form.username.id_for_label }}">Email Address or Username</label>
-            {{ form.username }}
-            {% if form.username.errors %}
-              <div class="auth-errors">{{ form.username.errors }}</div>
-            {% endif %}
-          </div>
+        <div class="auth-field">
+          <label class="auth-label" for="{{ form.password.id_for_label }}">
+            Password
+          </label>
+          {{ form.password }}
 
-          <div class="auth-field">
-            <label class="auth-label" for="{{ form.password.id_for_label }}">Password</label>
-            {{ form.password }}
-            {% if form.password.errors %}
-              <div class="auth-errors">{{ form.password.errors }}</div>
-            {% endif %}
-          </div>
+          {% if form.password.errors %}
+            <div class="auth-errors">{{ form.password.errors }}</div>
+          {% endif %}
+        </div>
 
-          <div class="auth-row">
-            <label class="auth-check">
-              <input type="checkbox" name="remember_me">
-              <span>Remember me</span>
-            </label>
-            <span class="auth-link" style="opacity: 0.7; cursor: default;">Forgot password?</span>
-          </div>
+        <div class="auth-row">
+          <label class="auth-check">
+            <input type="checkbox" name="remember_me">
+            <span>Запомнить меня</span>
+          </label>
 
-          <button type="submit" class="auth-submit">Sign In</button>
-        </form>
-      </div>
+          <a class="auth-link" href="{% url 'password_reset' %}">
+            Забыли пароль?
+          </a>
+        </div>
+
+        <button type="submit" class="auth-submit">Sign In</button>
+      </form>
     </div>
 
     <div class="auth-note">
