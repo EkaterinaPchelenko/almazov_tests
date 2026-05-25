@@ -1,7 +1,6 @@
 venv/
 env/
 ENV/
-.env/
 almazov_tests/commands.txt
 almazov_tests/backend/*/migrations/*.py
 !almazov_tests/backend/*/migrations/__init__.py

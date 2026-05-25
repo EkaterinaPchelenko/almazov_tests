@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Подтверждение email | Medical Cell Trainer{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="auth-page">
+  <div class="auth-wrap">
+    <div class="auth-brand">
+      <div class="auth-brand__icon">✉️</div>
+      <h1 class="auth-brand__title">Подтвердите email</h1>
+      <p class="auth-brand__text">
+        Мы отправили письмо на адрес <strong>{{ email }}</strong>.
+        Перейдите по ссылке из письма, чтобы завершить регистрацию.
+      </p>
+    </div>
+
+    <div class="auth-card">
+      <h2 class="auth-card__title">Почти готово</h2>
+      <p class="auth-card__subtitle">
+        Если письма нет во входящих, проверьте папку «Спам».
+      </p>
+
+      <a class="auth-btn" href="{% url 'login' %}">
+        Перейти ко входу
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}
