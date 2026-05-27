@@ -1,7 +1,10 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Уровни тестов | Medical Cell Trainer{% endblock %}
-
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/levels.css' %}">
+{% endblock %}
 {% block content %}
 <section class="card card--soft" style="padding: 28px; margin-bottom: 24px;">
     <div style="display: flex; justify-content: space-between; gap: 20px; align-items: start; flex-wrap: wrap;">
@@ -114,60 +117,72 @@
         </div>
     {% endfor %}
 
-    <article class="card" style="padding: 24px;">
-        <div style="display: flex; justify-content: space-between; gap: 20px; align-items: start; flex-wrap: wrap;">
-            <div style="display: flex; gap: 18px; align-items: start;">
-                <div style="
-                    width: 62px;
-                    height: 62px;
-                    border-radius: 50%;
-                    display: grid;
-                    place-items: center;
-                    font-weight: 800;
-                    font-size: 22px;
-                    color: white;
-                    background: #2f6df6;
-                ">
+    <article class="card diagnostic-level-card {% if not diagnostic_level_unlocked %}diagnostic-level-card--locked{% endif %}">
+    <div class="diagnostic-level-card__header">
+        <div class="diagnostic-level-card__main">
+            <div class="diagnostic-level-card__icon">
+                {% if diagnostic_level_unlocked %}
                     D
-                </div>
-
-                <div>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                        <div style="font-size: 28px; font-weight: 800;">
-                            Диагностический уровень
-                        </div>
-                        <span class="pill">Case-based</span>
-                    </div>
-
-                    <div class="section-text" style="margin-top: 8px;">
-                        Подсчитайте клетки в клиническом кейсе, получите количественные результаты
-                        и выберите предполагаемый диагноз.
-                    </div>
-
-                    <div class="section-text" style="margin-top: 14px;">
-                        Формат: 1 прохождение = 1 кейс, изображения показываются группами по 5.
-                    </div>
-                </div>
+                {% else %}
+                    🔒
+                {% endif %}
             </div>
 
-            <div style="font-size: 18px; font-weight: 700;">
-                30 кейсов
+            <div>
+                <div class="diagnostic-level-card__title-row">
+                    <div class="diagnostic-level-card__title">
+                        Диагностический уровень
+                    </div>
+
+                    <span class="pill">Case-based</span>
+                </div>
+
+                <div class="section-text diagnostic-level-card__text">
+                    Подсчитайте клетки в клиническом кейсе, получите количественные результаты
+                    и выберите предполагаемый диагноз.
+                </div>
+
+                <div class="section-text diagnostic-level-card__text diagnostic-level-card__text--secondary">
+                    Формат: 1 прохождение = 1 кейс, изображения показываются группами по 5.
+                </div>
             </div>
         </div>
 
-        <div class="progress" style="margin-top: 14px;">
-            <div class="progress__bar" style="width: 0%;"></div>
+        <div class="diagnostic-level-card__count">
+            30 кейсов
         </div>
+    </div>
 
-        <div style="margin-top: 18px; display: flex; gap: 12px; flex-wrap: wrap;">
-            <a href="{% url 'start_diagnostic_case_level' %}" class="btn btn--primary">
+    <div class="progress diagnostic-level-card__progress">
+        <div class="progress__bar" style="width: 0%;"></div>
+    </div>
+
+    <div class="diagnostic-level-card__footer">
+        {% if diagnostic_level_unlocked %}
+            <a
+                href="{% url 'start_diagnostic_case_level' %}"
+                class="btn btn--primary"
+            >
                 Начать диагностический кейс
             </a>
+        {% else %}
+            <button
+                type="button"
+                disabled
+                class="diagnostic-level-card__locked-btn"
+            >
+                Пройдите предыдущий уровень, чтобы разблокировать
+            </button>
 
-            <span class="pill">Подсчёт клеток</span>
-            <span class="pill">Диагноз</span>
-        </div>
-    </article>
+            <span class="diagnostic-level-card__locked-text">
+                Диагностический уровень откроется после успешного прохождения всех попыток 3 уровня.
+            </span>
+        {% endif %}
+
+        <span class="pill">Подсчёт клеток</span>
+        <span class="pill">Диагноз</span>
+    </div>
+</article>
 </section>
 
 <section class="card" style="padding: 24px; margin-top: 24px; background: #eef4ff;">

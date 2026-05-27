@@ -237,3 +237,20 @@ def build_level_overview(user):
         "total_required": total_required,
         "overall_percent": int((total_completions / total_required) * 100),
     }
+
+
+def is_diagnostic_level_unlocked(user):
+    level_3 = Level.objects.filter(
+        is_active=True,
+        order=3,
+    ).first()
+
+    if not level_3:
+        return False
+
+    progress = UserLevelProgress.objects.filter(
+        user=user,
+        level=level_3,
+    ).first()
+
+    return bool(progress and progress.is_completed)

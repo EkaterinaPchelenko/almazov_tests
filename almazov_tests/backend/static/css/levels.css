@@ -1,0 +1,97 @@
+.diagnostic-level-card {
+    padding: 24px;
+}
+
+.diagnostic-level-card--locked {
+    opacity: 0.78;
+    filter: grayscale(0.25);
+}
+
+.diagnostic-level-card__header {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.diagnostic-level-card__main {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+}
+
+.diagnostic-level-card__icon {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: 22px;
+    color: white;
+    background: #2f6df6;
+    flex-shrink: 0;
+}
+
+.diagnostic-level-card--locked .diagnostic-level-card__icon {
+    background: #cfd8e3;
+    color: #64748b;
+}
+
+.diagnostic-level-card__title-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.diagnostic-level-card__title {
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.diagnostic-level-card--locked .diagnostic-level-card__title,
+.diagnostic-level-card--locked .diagnostic-level-card__text,
+.diagnostic-level-card--locked .diagnostic-level-card__count {
+    color: #7b8da3;
+}
+
+.diagnostic-level-card__text {
+    margin-top: 8px;
+}
+
+.diagnostic-level-card__text--secondary {
+    margin-top: 14px;
+}
+
+.diagnostic-level-card__count {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.diagnostic-level-card__progress {
+    margin-top: 14px;
+}
+
+.diagnostic-level-card__footer {
+    margin-top: 18px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.diagnostic-level-card__locked-btn {
+    border: 1px solid #dbe4f0;
+    background: #ffffff;
+    color: #64748b;
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-weight: 700;
+    cursor: not-allowed;
+}
+
+.diagnostic-level-card__locked-text {
+    color: #7b8da3;
+}

@@ -21,6 +21,7 @@ from .services.level_tests import (
     get_allowed_cell_ids_for_level,
     get_choice_count_for_progress,
     get_or_create_level_progress,
+    is_diagnostic_level_unlocked,
 )
 from .services.diagnostic_cases import (
     build_counts_comparison,
@@ -117,6 +118,7 @@ def dashboard(request):
 @login_required
 def levels_page(request):
     context = build_level_overview(request.user)
+    context["diagnostic_level_unlocked"] = is_diagnostic_level_unlocked(request.user)
     return render(request, "levels.html", context)
 
 
@@ -383,6 +385,9 @@ def submit_answer_htmx(request, session_id):
 
 @login_required
 def start_diagnostic_case_level(request):
+    if not is_diagnostic_level_unlocked(request.user):
+        return redirect("levels_page")
+
     session = create_diagnostic_case_session(request.user)
 
     if session is None:
@@ -393,7 +398,6 @@ def start_diagnostic_case_level(request):
         )
 
     return redirect("diagnostic_case_page", session_id=session.id)
-
 
 @login_required
 def diagnostic_case_page(request, session_id):
