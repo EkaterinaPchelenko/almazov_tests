@@ -24,21 +24,7 @@ LEVEL_CONFIG = [
         "description": "Сопоставление изображений клеток с их названиями",
         "badge": Level.Badge.INTERMEDIATE,
         "cells": [],
-    },
-    {
-        "order": 4,
-        "title": "Продвинутая гистология",
-        "description": "Определение паталогий",
-        "badge": Level.Badge.ADVANCED,
-        "cells": [],
-    },
-    {
-        "order": 5,
-        "title": "Экспертный подсчёт",
-        "description": "Подсчёт клеток",
-        "badge": Level.Badge.EXPERT,
-        "cells": [],
-    },
+    }
 ]
 
 
