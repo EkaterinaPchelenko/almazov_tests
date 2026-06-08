@@ -66,6 +66,14 @@ def _render_result(request, session):
 
 
 @login_required
+def home_redirect(request):
+    if request.user.is_staff:
+        return redirect("teacher_dashboard")
+
+    return redirect("dashboard")
+
+
+@login_required
 def dashboard(request):
     ensure_level_progress_for_user(request.user)
 
